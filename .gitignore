@@ -1,0 +1,118 @@
+# ============================================================
+# Monorepo .gitignore (Spring Boot + Maven + React/Vite + MySQL)
+# ============================================================
+
+# ------------------------------------------------------------
+# OS / IDE
+# ------------------------------------------------------------
+.DS_Store
+.DS_Store?
+Thumbs.db
+Desktop.ini
+
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.suo
+*.njsproj
+*.sln
+
+# ------------------------------------------------------------
+# Logs / runtime artifacts
+# ------------------------------------------------------------
+*.log
+*.log.*
+*.pid
+*.pid.lock
+*.seed
+
+logs/
+**/logs/
+
+tmp/
+temp/
+
+# ------------------------------------------------------------
+# Environment / secrets
+# Keep examples, ignore real env files.
+# ------------------------------------------------------------
+.env
+.env.*
+**/.env
+**/.env.*
+
+!.env.example
+!**/.env.example
+!**/.env.*.example
+
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+*.crt
+
+# ------------------------------------------------------------
+# Java / Maven (Spring Boot)
+# ------------------------------------------------------------
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Keep Maven Wrapper binary for reproducible builds
+!**/.mvn/wrapper/maven-wrapper.jar
+
+# Maven release plugin backups
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# ------------------------------------------------------------
+# Node / React / Vite
+# ------------------------------------------------------------
+**/node_modules/
+**/dist/
+**/build/
+**/dist-ssr/
+**/.vite/
+**/.cache/
+**/.parcel-cache/
+**/.eslintcache
+**/.stylelintcache
+**/.turbo/
+**/coverage/
+**/.nyc_output/
+*.tsbuildinfo
+
+# Package manager local caches
+.pnpm-store/
+.npm/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# ------------------------------------------------------------
+# Upload directories (runtime generated files only)
+# Use anchored paths to avoid ignoring source package ".../upload/...".
+# ------------------------------------------------------------
+/upload/
+/uploads/
+/blog-backend/upload/
+/blog-backend/uploads/
+
+# ------------------------------------------------------------
+# Local tool folders (optional)
+# ------------------------------------------------------------
+.agent/
+.shared/
+.claude/
+.fleet/
+review-docs/

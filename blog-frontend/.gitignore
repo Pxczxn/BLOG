@@ -1,0 +1,40 @@
+# ------------------------------------------------------------
+# React + Vite (frontend admin)
+# ------------------------------------------------------------
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+build/
+
+# Tool caches
+.vite/
+.cache/
+.parcel-cache/
+.eslintcache
+coverage/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local env files (keep examples)
+.env.local
+.env.*.local
+*.local
+!.env.example
+!.env.*.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,26 @@
+package com.pxczxn.blog.comment.dto;
+
+import com.pxczxn.blog.comment.entity.Comment;
+import com.pxczxn.blog.comment.entity.CommentStatus;
+
+import java.time.LocalDateTime;
+
+public record AdminCommentItemResponse(
+        Long id,
+        Long articleId,
+        String nickname,
+        String content,
+        CommentStatus status,
+        LocalDateTime createdAt
+) {
+    public static AdminCommentItemResponse from(Comment comment) {
+        return new AdminCommentItemResponse(
+                comment.getId(),
+                comment.getArticleId(),
+                comment.getNickname(),
+                comment.getContent(),
+                comment.getStatus(),
+                comment.getCreatedAt()
+        );
+    }
+}
