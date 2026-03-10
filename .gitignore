@@ -116,3 +116,10 @@ dependency-reduced-pom.xml
 .claude/
 .fleet/
 review-docs/
+/sql/
+
+# Markdown docs
+# Keep README files, ignore other markdown files.
+**/*.md
+!README.md
+!**/README*.md

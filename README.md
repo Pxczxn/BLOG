@@ -14,8 +14,6 @@
 - `blog-backend`: 后端服务
 - `blog-public`: 公开博客前端
 - `blog-frontend`: 管理后台前端
-- `deploy`: 部署脚本与 Nginx 模板
-- `sql`: SQL 脚本
 
 ## 本地开发
 
@@ -60,13 +58,10 @@ npm run dev
 - API: `/api/` -> `127.0.0.1:8080`
 - 上传静态文件: `/uploads/` -> `/app/blog/upload/`
 
-## 部署文档
+## SQL 迁移
 
-- 快速开始: [`deploy/QUICKSTART.md`](./deploy/QUICKSTART.md)
-- 完整指南: [`deploy/README.md`](./deploy/README.md)
-- 上线检查清单: [`deploy/PRODUCTION_CHECKLIST.md`](./deploy/PRODUCTION_CHECKLIST.md)
-- 兼容旧入口: [`DEPLOY.md`](./DEPLOY.md)
-- 上传前清单: [`UPLOAD_FILES.md`](./UPLOAD_FILES.md)
+- 仅保留并使用：`blog-backend/src/main/resources/db/migration/`
+- 不再维护根目录 `sql/` 副本，避免重复与漂移
 
 ## 安全说明
 
