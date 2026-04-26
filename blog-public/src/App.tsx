@@ -4,11 +4,11 @@ import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
 import { AuthProvider } from './lib/AuthContext';
 
-
 import RequireAdminAuth from './components/RequireAdminAuth';
 
 const Home = lazy(() => import('./pages/Home'));
 const Blog = lazy(() => import('./pages/Blog'));
+const BlogArticleEditor = lazy(() => import('./pages/BlogArticleEditor'));
 const Category = lazy(() => import('./pages/Category'));
 const Tags = lazy(() => import('./pages/Tags'));
 const Community = lazy(() => import('./pages/Community'));
@@ -71,10 +71,11 @@ export default function App() {
         />
         <Suspense fallback={<RouteFallback />}>
           <Routes>
-            
+            {}
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="blog" element={<Blog />} />
+              <Route path="blog/new" element={<BlogArticleEditor />} />
               <Route path="category" element={<Category />} />
               <Route path="tags" element={<Tags />} />
               <Route path="post/:slug" element={<ArticleDetail />} />
@@ -86,15 +87,15 @@ export default function App() {
               <Route path="about" element={<About />} />
             </Route>
 
-            
+            {}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/me" element={<Layout />}><Route index element={<UserProfile />} /></Route>
 
-            
+            {}
             <Route path="/admin-pxczxn/login" element={<AdminLogin />} />
 
-            
+            {}
             <Route path="/admin-pxczxn" element={<RequireAdminAuth />}>
               <Route element={<AdminLayout />}>
                 <Route index element={<Dashboard />} />

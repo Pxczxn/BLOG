@@ -1,14 +1,15 @@
 
 
 
-
-
-
 package com.pxczxn.blog.content.service;
 
 import com.pxczxn.blog.category.entity.Category;
 import com.pxczxn.blog.category.repository.CategoryRepository;
 import com.pxczxn.blog.common.response.PageResponse;
+import com.pxczxn.blog.community.entity.CommunityUser;
+import com.pxczxn.blog.community.entity.CommunityUserStatus;
+import com.pxczxn.blog.community.exception.CommunityAuthException;
+import com.pxczxn.blog.community.repository.CommunityUserRepository;
 import com.pxczxn.blog.content.dto.ArticleAdminDetailResponse;
 import com.pxczxn.blog.content.dto.ArticleAdminListItemResponse;
 import com.pxczxn.blog.content.dto.ArticleCategorySummaryResponse;
@@ -80,18 +81,12 @@ public class ArticleService {
     private final ArticleRepository articleRepository;
     private final ArticleTagQueryRepository articleTagQueryRepository;
     private final AdminUserRepository adminUserRepository;
+    private final CommunityUserRepository communityUserRepository;
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
     private final SecureRandom secureRandom = new SecureRandom();
 
     
-
-
-
-
-
-
-
 
 
     @Transactional
@@ -122,6 +117,36 @@ public class ArticleService {
         return toArticleResponse(saved);
     }
 
+    @Transactional
+    public ArticleResponse createFromCommunity(ArticleCreateRequest request, Long communityUserId) {
+        CommunityUser author = communityUserRepository.findById(communityUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Community author does not exist: " + communityUserId));
+        if (author.getStatus() != CommunityUserStatus.ACTIVE) {
+            throw CommunityAuthException.accountDisabled();
+        }
+
+        ArticleStatus status = request.getStatus() == ArticleStatus.DRAFT ? ArticleStatus.DRAFT : ArticleStatus.PUBLISHED;
+        Article article = Article.builder()
+                .title(request.getTitle().trim())
+                .slug(generateUniqueSlug(request.getTitle()))
+                .summary(trimToNull(request.getSummary()))
+                .content(request.getContent().trim())
+                .coverImage(trimToNull(request.getCoverImage()))
+                .categoryId(normalizeCategoryId(request.getCategoryId()))
+                .status(status)
+                .communityAuthorId(author.getId())
+                .build();
+
+        if (ArticleStatus.PUBLISHED.equals(status)) {
+            article.setPublishedAt(LocalDateTime.now());
+        }
+
+        Article saved = articleRepository.save(article);
+        articleTagQueryRepository.replaceTagsForArticle(saved.getId(), normalizeTagIds(request.getTagIds()));
+        log.info("Community article created: id={}, slug={}, author={}", saved.getId(), saved.getSlug(), author.getUsername());
+        return toArticleResponse(saved);
+    }
+
     @Transactional(readOnly = true)
     public ArticleResponse getById(Long id) {
         Article article = articleRepository.findById(id)
@@ -146,8 +171,6 @@ public class ArticleService {
     }
 
     
-
-
 
 
     @Transactional(readOnly = true)
@@ -185,8 +208,6 @@ public class ArticleService {
     }
 
     
-
-
 
 
     @Transactional(readOnly = true)
@@ -510,6 +531,14 @@ public class ArticleService {
             throw new IllegalArgumentException("Category not found");
         }
         return categoryId;
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private List<Long> normalizeTagIds(List<Long> tagIds) {
