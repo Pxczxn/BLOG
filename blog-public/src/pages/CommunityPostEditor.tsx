@@ -9,9 +9,14 @@ import {
   Edit3,
   Eye,
   Heading1,
+  Heading2,
+  Heading3,
+  ImagePlus,
   Italic,
+  Link as LinkIcon,
   List,
   ListOrdered,
+  Minus,
   Quote,
   Send,
 } from 'lucide-react';
@@ -127,6 +132,21 @@ export default function CommunityPostEditor() {
     updateContentWithSelection(nextValue, start + prefix.length, start + prefixed.length);
   };
 
+  const insertBlock = (block: string, cursorOffset = block.length) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const needsBeforeBreak = start > 0 && content[start - 1] !== '\n';
+    const needsAfterBreak = end < content.length && content[end] !== '\n';
+    const nextBlock = `${needsBeforeBreak ? '\n' : ''}${block}${needsAfterBreak ? '\n' : ''}`;
+    const nextValue = `${content.slice(0, start)}${nextBlock}${content.slice(end)}`;
+    const nextCursor = start + (needsBeforeBreak ? 1 : 0) + cursorOffset;
+
+    updateContentWithSelection(nextValue, nextCursor, nextCursor);
+  };
+
   const toggleTag = (tagId: number) => {
     setSelectedTagIds((current) => {
       if (current.includes(tagId)) {
@@ -182,41 +202,39 @@ export default function CommunityPostEditor() {
     }
   };
 
-  const toolbarItems = [
+  const toolbarGroups = [
     {
       label: '标题',
-      icon: Heading1,
-      action: () => insertLinePrefix('# ', '一级标题'),
+      items: [
+        { label: '一级标题', short: 'H1', icon: Heading1, action: () => insertLinePrefix('# ', '一级标题') },
+        { label: '二级标题', short: 'H2', icon: Heading2, action: () => insertLinePrefix('## ', '二级标题') },
+        { label: '三级标题', short: 'H3', icon: Heading3, action: () => insertLinePrefix('### ', '三级标题') },
+      ],
     },
     {
-      label: '加粗',
-      icon: Bold,
-      action: () => insertInline('**', '**', '加粗文字'),
+      label: '样式',
+      items: [
+        { label: '加粗', icon: Bold, action: () => insertInline('**', '**', '加粗文字') },
+        { label: '斜体', icon: Italic, action: () => insertInline('*', '*', '斜体文字') },
+        { label: '行内代码', icon: Code2, action: () => insertInline('`', '`', 'code') },
+      ],
     },
     {
-      label: '斜体',
-      icon: Italic,
-      action: () => insertInline('*', '*', '斜体文字'),
+      label: '列表',
+      items: [
+        { label: '无序列表', icon: List, action: () => insertLinePrefix('- ', '列表项') },
+        { label: '有序列表', icon: ListOrdered, action: () => insertLinePrefix('1. ', '列表项') },
+        { label: '引用', icon: Quote, action: () => insertLinePrefix('> ', '引用内容') },
+      ],
     },
     {
-      label: '无序列表',
-      icon: List,
-      action: () => insertLinePrefix('- ', '列表项'),
-    },
-    {
-      label: '有序列表',
-      icon: ListOrdered,
-      action: () => insertLinePrefix('1. ', '列表项'),
-    },
-    {
-      label: '引用',
-      icon: Quote,
-      action: () => insertLinePrefix('> ', '引用内容'),
-    },
-    {
-      label: '代码',
-      icon: Code2,
-      action: () => insertInline('`', '`', 'code'),
+      label: '插入',
+      items: [
+        { label: '代码块', icon: Code2, action: () => insertBlock('```js\nconsole.log(\"hello\");\n```\n', 6) },
+        { label: '链接', icon: LinkIcon, action: () => insertInline('[', '](https://example.com)', '链接文字') },
+        { label: '图片', icon: ImagePlus, action: () => insertInline('![', '](https://example.com/image.png)', '图片描述') },
+        { label: '分割线', icon: Minus, action: () => insertBlock('---\n') },
+      ],
     },
   ];
 
@@ -376,22 +394,35 @@ export default function CommunityPostEditor() {
               </div>
             </div>
 
-            <div className="mb-3 flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-black/20 p-2">
-              {toolbarItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={item.action}
-                    title={item.label}
-                    className="inline-flex h-9 items-center gap-2 rounded-xl px-3 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span className="hidden sm:inline">{item.label}</span>
-                  </button>
-                );
-              })}
+            <div className="mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-black/20 p-2">
+              {toolbarGroups.map((group) => (
+                <div
+                  key={group.label}
+                  className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1"
+                >
+                  <span className="hidden px-2 text-[11px] font-medium text-slate-500 sm:inline">
+                    {group.label}
+                  </span>
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={item.action}
+                        title={item.label}
+                        className="inline-flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold text-slate-300 transition hover:bg-purple-500/20 hover:text-white"
+                      >
+                        {'short' in item && item.short ? (
+                          <span>{item.short}</span>
+                        ) : (
+                          <Icon className="h-4 w-4" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
 
             <div>
