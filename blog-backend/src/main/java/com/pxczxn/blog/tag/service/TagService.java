@@ -1,11 +1,10 @@
 
 
 
-
-
 package com.pxczxn.blog.tag.service;
 
 import com.pxczxn.blog.content.repository.ArticleTagQueryRepository;
+import com.pxczxn.blog.community.post.repository.CommunityPostTagQueryRepository;
 import com.pxczxn.blog.tag.dto.TagCreateRequest;
 import com.pxczxn.blog.tag.entity.Tag;
 import com.pxczxn.blog.tag.exception.TagNotFoundException;
@@ -45,12 +44,11 @@ public class TagService {
     private final TagRepository tagRepository;
     
     private final ArticleTagQueryRepository articleTagQueryRepository;
+    private final CommunityPostTagQueryRepository communityPostTagQueryRepository;
     
     private final SecureRandom secureRandom = new SecureRandom();
 
     
-
-
 
 
     @Transactional(readOnly = true)
@@ -59,12 +57,6 @@ public class TagService {
     }
 
     
-
-
-
-
-
-
 
 
     @Transactional
@@ -85,26 +77,16 @@ public class TagService {
     
 
 
-
-
-
-
-
     @Transactional
     public void delete(Long id) {
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new TagNotFoundException(id));
         articleTagQueryRepository.deleteByTagId(id);
+        communityPostTagQueryRepository.deleteByTagId(id);
         tagRepository.delete(tag);
     }
 
     
-
-
-
-
-
-
 
 
     private String generateUniqueSlug(String name) {
@@ -129,11 +111,6 @@ public class TagService {
     
 
 
-
-
-
-
-
     private String slugify(String source) {
         String normalized = Normalizer.normalize(source == null ? "" : source, Normalizer.Form.NFD);
         String noAccents = DIACRITICS.matcher(normalized).replaceAll("");
@@ -150,10 +127,6 @@ public class TagService {
     
 
 
-
-
-
-
     private String trimSlug(String slug, int maxLength) {
         if (slug.length() <= maxLength) {
             return slug;
@@ -162,9 +135,6 @@ public class TagService {
     }
 
     
-
-
-
 
 
     private String randomSuffix(int len) {

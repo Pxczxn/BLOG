@@ -262,7 +262,7 @@ export default function CommunityPostEditor() {
         <p className="mb-3 text-sm font-semibold uppercase tracking-[0.35em] text-purple-300">Community</p>
         <h1 className="text-4xl font-black text-white md:text-5xl">发布新帖子</h1>
         <p className="mt-4 max-w-2xl text-lg text-slate-400">
-          选一个合适的节点，用 Markdown 写下问题、经验或灵感。右侧会实时预览发布后的阅读效果。
+          选一个合适的节点，用 Markdown 写下问题、经验或灵感。需要检查效果时，切到预览看一眼就好。
         </p>
       </div>
 
@@ -352,7 +352,7 @@ export default function CommunityPostEditor() {
           <div>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <label className="block text-sm font-medium text-slate-300">正文</label>
-              <div className="flex rounded-full border border-white/10 bg-white/5 p-1 lg:hidden">
+              <div className="flex rounded-full border border-white/10 bg-white/5 p-1">
                 <button
                   type="button"
                   onClick={() => setPreviewMode('write')}
@@ -394,19 +394,17 @@ export default function CommunityPostEditor() {
               })}
             </div>
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
-              <div className={previewMode === 'preview' ? 'hidden lg:block' : 'block'}>
+            <div>
+              {previewMode === 'write' ? (
                 <textarea
                   ref={textareaRef}
                   value={content}
                   onChange={(event) => setContent(event.target.value)}
                   placeholder="在这里分享你的想法、代码或问题..."
-                  className="h-80 w-full resize-y rounded-2xl border border-purple-500/40 bg-black/20 px-5 py-4 text-white outline-none transition placeholder:text-slate-600 focus:border-purple-400 lg:h-[460px]"
+                  className="h-[460px] w-full resize-y rounded-2xl border border-purple-500/40 bg-black/20 px-5 py-4 text-white outline-none transition placeholder:text-slate-600 focus:border-purple-400"
                 />
-              </div>
-
-              <div className={previewMode === 'write' ? 'hidden lg:block' : 'block'}>
-                <div className="min-h-80 rounded-2xl border border-white/10 bg-white/[0.03] p-5 lg:min-h-[460px]">
+              ) : (
+                <div className="min-h-[460px] rounded-2xl border border-white/10 bg-white/[0.03] p-5">
                   <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
                     <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-300">
                       <Eye className="h-4 w-4 text-purple-300" />
@@ -427,7 +425,7 @@ export default function CommunityPostEditor() {
                     </div>
                   )}
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
