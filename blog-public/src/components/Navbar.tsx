@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, User, BookOpen, Package, MessageSquare, Info, LogOut } from 'lucide-react';
+import { Search, User, BookOpen, Package, MessageSquare, Info, LogOut, Menu, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useAuth } from '../lib/AuthContext';
@@ -11,6 +11,9 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
     <motion.nav
@@ -19,7 +22,7 @@ export default function Navbar() {
       className="fixed inset-x-0 top-0 z-50 flex h-16 items-center border-b border-white/10 bg-black/20 px-4 backdrop-blur-xl sm:px-6 lg:px-8"
     >
       <div className="mx-auto flex h-full w-full max-w-7xl items-center justify-between">
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-3 sm:gap-8">
           <Link
             to="/"
             className="shrink-0 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-xl font-bold text-transparent"
@@ -146,8 +149,121 @@ export default function Navbar() {
               </span>
             </Link>
           )}
+
+          <button
+            type="button"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition-colors hover:bg-white/10 md:hidden"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            aria-expanded={mobileMenuOpen}
+            aria-label="切换导航菜单"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
       </div>
+
+      {mobileMenuOpen && (
+        <div className="absolute inset-x-0 top-full z-50 border-b border-white/10 bg-[#030014]/95 px-4 py-4 backdrop-blur-xl md:hidden">
+          <div className="mx-auto flex max-w-7xl flex-col gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+              <input
+                type="text"
+                placeholder="搜索内容..."
+                className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-9 pr-4 text-sm text-white placeholder-slate-500 transition-all focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-sm font-medium text-slate-300">
+              <MobileNavLink to="/" isActive={location.pathname === '/'} onClick={closeMobileMenu}>
+                首页
+              </MobileNavLink>
+              <MobileNavLink
+                to="/blog"
+                isActive={['/blog', '/post', '/category', '/tags'].some((path) => location.pathname.startsWith(path))}
+                onClick={closeMobileMenu}
+              >
+                博客
+              </MobileNavLink>
+              <MobileNavLink
+                to="/resources"
+                isActive={location.pathname.startsWith('/resources')}
+                onClick={closeMobileMenu}
+              >
+                资源
+              </MobileNavLink>
+              <MobileNavLink
+                to="/community"
+                isActive={location.pathname.startsWith('/community')}
+                onClick={closeMobileMenu}
+              >
+                社区
+              </MobileNavLink>
+              <MobileNavLink
+                to="/about"
+                isActive={location.pathname.startsWith('/about')}
+                onClick={closeMobileMenu}
+              >
+                关于
+              </MobileNavLink>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              {user ? (
+                <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeMobileMenu();
+                      navigate('/me');
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-slate-200 transition-colors hover:bg-white/5"
+                  >
+                    <User className="h-4 w-4 text-slate-400" />
+                    个人主页
+                  </button>
+                  <Link
+                    to="/community/new"
+                    onClick={closeMobileMenu}
+                    className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-slate-200 transition-colors hover:bg-white/5"
+                  >
+                    <MessageSquare className="h-4 w-4 text-slate-400" />
+                    发布帖子
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeMobileMenu();
+                      logout();
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm text-red-300 transition-colors hover:bg-red-500/10 hover:text-red-200"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    退出登录
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    to="/login"
+                    onClick={closeMobileMenu}
+                    className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm text-slate-200 transition-colors hover:bg-white/10"
+                  >
+                    登录
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={closeMobileMenu}
+                    className="rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-3 text-center text-sm text-white transition-colors hover:from-purple-500 hover:to-blue-500"
+                  >
+                    注册
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </motion.nav>
   );
 }
@@ -176,6 +292,33 @@ function NavLink({
           className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
         />
       )}
+    </Link>
+  );
+}
+
+function MobileNavLink({
+  to,
+  children,
+  isActive = false,
+  onClick,
+}: {
+  to: string;
+  children: ReactNode;
+  isActive?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      className={cn(
+        'rounded-xl border px-4 py-3 text-center transition-all duration-300',
+        isActive
+          ? 'border-purple-500/40 bg-purple-500/10 text-purple-300'
+          : 'border-white/10 bg-white/5 hover:bg-white/10 hover:text-white',
+      )}
+    >
+      {children}
     </Link>
   );
 }

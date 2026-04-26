@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { MessageSquare, Users, ThumbsUp, Eye } from 'lucide-react';
-import request from '../lib/request';
+import request, { getStaticUrl } from '../lib/request';
 import RoleBadge from '../components/RoleBadge';
 import EmptyState from '../components/EmptyState';
 import { useAuth } from '../lib/AuthContext';
@@ -25,6 +25,7 @@ type Topic = {
   };
   tags: string[];
   author: string;
+  authorAvatar?: string;
   authorRole?: string;
   time: string;
   replies: number;
@@ -82,6 +83,7 @@ export default function Community() {
             ? item.tags.map((t: any) => t.name || t).filter(Boolean)
             : [],
           author: item.author?.displayName || item.author?.username || '匿名',
+          authorAvatar: item.author?.avatar,
           authorRole: item.author?.role,
           time: item.createdAt
             ? new Date(item.createdAt).toLocaleDateString('zh-CN', {
@@ -178,7 +180,15 @@ export default function Community() {
                 >
                   <div className="flex flex-1 gap-4 items-start md:items-center">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-slate-800">
-                      <Users className="h-5 w-5 text-slate-500" />
+                      {topic.authorAvatar ? (
+                        <img
+                          src={getStaticUrl(topic.authorAvatar)}
+                          alt={topic.author}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Users className="h-5 w-5 text-slate-500" />
+                      )}
                     </div>
                     <div>
                       <div className="mb-1 flex flex-wrap items-center gap-2">
