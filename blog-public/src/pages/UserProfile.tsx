@@ -1,9 +1,7 @@
-
-
-
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
+import toast from 'react-hot-toast';
 import { User, Mail, Link as LinkIcon, Edit3, LogOut, Bell, FileText, Camera } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import request, { getStaticUrl } from '../lib/request';
@@ -14,7 +12,7 @@ export default function UserProfile() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [activeTab, setActiveTab] = useState('profile'); 
+  const [activeTab, setActiveTab] = useState('profile');
   const [form, setForm] = useState({
     displayName: '',
     bio: '',
@@ -57,9 +55,9 @@ export default function UserProfile() {
       setSaving(true);
       await request.patch('/api/community/me', form);
       await refreshUser();
-      alert('资料更新成功');
+      toast.success('资料更新成功', { duration: 1500 });
     } catch (error: any) {
-      alert(error.message || '更新失败');
+      toast.error(error.message || '更新失败', { duration: 1800 });
     } finally {
       setSaving(false);
     }
@@ -76,17 +74,17 @@ export default function UserProfile() {
       setSaving(true);
       const res: any = await request.post('/api/community/upload/avatar', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      
+      });
       const avatarUrl = res?.data?.url || res?.data || res?.url || res;
       if (typeof avatarUrl === 'string') {
         await request.patch('/api/community/me', { avatar: avatarUrl });
         await refreshUser();
+        toast.success('头像更新成功', { duration: 1500 });
       } else {
-        alert('头像上传成功但获取URL失败');
+        toast.error('头像上传成功，但没有拿到图片地址', { duration: 1800 });
       }
     } catch (error: any) {
-      alert(error.message || '头像上传失败');
+      toast.error(error.message || '头像上传失败', { duration: 1800 });
     } finally {
       setSaving(false);
     }
@@ -117,7 +115,7 @@ export default function UserProfile() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex flex-col md:flex-row gap-8">
         
-        
+        {/* 侧边栏 */}
         <div className="md:w-64 shrink-0 space-y-4">
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md flex flex-col items-center text-center">
             <div className="relative group mb-4">
@@ -177,7 +175,7 @@ export default function UserProfile() {
           </div>
         </div>
 
-        
+        {/* 内容区域 */}
         <div className="flex-1">
           <motion.div 
             key={activeTab}
