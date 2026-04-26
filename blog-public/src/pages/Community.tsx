@@ -122,7 +122,7 @@ export default function Community() {
             transition={{ delay: 0.1 }}
             className="mt-2 text-sm text-slate-400"
           >
-            目前先作为留言和轻讨论区，适合放问题、想法和项目记录。
+            把问题、灵感和项目进展放在这里，慢慢沉淀成可回看的讨论记录。
           </motion.p>
         </div>
 
@@ -236,8 +236,8 @@ export default function Community() {
           ) : (
             <EmptyState
               icon={MessageSquare}
-              title="社区还在等第一条内容"
-              description="可以发一个问题、一个想法，或者记录一下最近折腾项目时遇到的小坑。"
+              title="还没有帖子，先开个头吧"
+              description="可以抛一个问题、记一段踩坑经历，或者分享最近正在打磨的小功能。"
               actions={[{ label: user ? '发布帖子' : '登录后发布', to: publishPath }]}
             />
           )}
