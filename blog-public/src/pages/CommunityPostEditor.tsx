@@ -360,11 +360,6 @@ export default function CommunityPostEditor() {
                 <span className="text-sm text-slate-500">暂无可选标签，请先在后台标签管理里添加。</span>
               )}
             </div>
-            {selectedTags.length > 0 && (
-              <p className="mt-3 text-xs text-slate-500">
-                当前标签：{selectedTags.map((tag) => tag.name).join(' / ')}
-              </p>
-            )}
           </div>
 
           <div>
