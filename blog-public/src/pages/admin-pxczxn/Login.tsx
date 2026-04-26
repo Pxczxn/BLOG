@@ -67,20 +67,20 @@ export default function AdminLogin() {
             <div className="w-16 h-16 bg-purple-500/20 rounded-2xl border border-purple-500/30 flex items-center justify-center mx-auto mb-4 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
               <Lock className="w-8 h-8 text-purple-400" />
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Admin System</h1>
-            <p className="text-slate-400 text-sm mt-2">请登录以管理您的博客与社区</p>
+            <h1 className="text-2xl font-bold text-white tracking-tight">后台管理</h1>
+            <p className="text-slate-400 text-sm mt-2">登录后管理博客与社区内容</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">Username</label>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">用户名</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input 
                   type="text" 
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  placeholder="admin"
+                  placeholder="管理员用户名"
                   className="w-full py-3 pl-11 pr-4 bg-black/20 border border-white/10 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
                   autoComplete="off"
                 />
@@ -88,7 +88,7 @@ export default function AdminLogin() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">Password</label>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">密码</label>
               <div className="relative">
                 <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input 

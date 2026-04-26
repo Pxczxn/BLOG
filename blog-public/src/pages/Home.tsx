@@ -53,7 +53,7 @@ export default function Home() {
         setArticles(normalized);
       } catch (err) {
         setArticles([]);
-        setError('后端暂时没有返回文章。');
+        setError('文章暂时加载失败，请稍后再试。');
       } finally {
         setLoading(false);
       }
@@ -72,11 +72,11 @@ export default function Home() {
           className="flex flex-col items-center"
         >
           <h1 className="mb-4 text-4xl font-black tracking-tight text-white drop-shadow-[0_0_15px_rgba(168,85,247,0.4)] md:text-5xl">
-            探索技术边界
+            记录技术与构建
           </h1>
 
           <p className="mb-6 max-w-2xl text-base text-slate-400 md:text-lg">
-            分享前端开发、系统设计与工程化实践，也记录一个开发者不断打磨作品的过程。
+            记录前端开发、后端实践和部署过程，把这个博客一点点打磨成自己的作品。
           </p>
 
           <Link
@@ -119,10 +119,10 @@ export default function Home() {
               <EmptyState
                 icon={FileText}
                 title="文章正在整理中"
-                description="这里会慢慢放技术笔记、项目记录和一些踩坑复盘。先逛逛资源页，或者去交流区留个想法。"
+                description="这里会慢慢放技术笔记、项目记录和一些问题复盘。先逛逛资源页，或者去社区留个想法。"
                 actions={[
                   { label: '浏览资源', to: '/resources' },
-                  { label: '去交流区', to: '/community', variant: 'ghost' },
+                  { label: '去社区看看', to: '/community', variant: 'ghost' },
                 ]}
               />
             )}

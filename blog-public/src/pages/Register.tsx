@@ -66,14 +66,14 @@ export default function Register() {
             )}
             
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">Username</label>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">用户名</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input 
                   type="text" 
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  placeholder="你的昵称"
+                  placeholder="例如 pxczxn"
                   className="w-full py-3 pl-11 pr-4 bg-black/20 border border-white/10 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
                   autoComplete="off"
                 />
@@ -81,7 +81,7 @@ export default function Register() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">Email</label>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">邮箱</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input 
@@ -96,7 +96,7 @@ export default function Register() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">Password</label>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">密码</label>
               <div className="relative">
                 <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input 
