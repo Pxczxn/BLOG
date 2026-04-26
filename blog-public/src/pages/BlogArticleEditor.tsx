@@ -217,20 +217,40 @@ export default function BlogArticleEditor() {
     }
   };
 
-  const toolbarItems = [
-    { label: '一级标题', icon: Heading1, action: () => insertLinePrefix('# ', '一级标题') },
-    { label: '二级标题', icon: Heading2, action: () => insertLinePrefix('## ', '二级标题') },
-    { label: '三级标题', icon: Heading3, action: () => insertLinePrefix('### ', '三级标题') },
-    { label: '加粗', icon: Bold, action: () => insertInline('**', '**', '加粗文字') },
-    { label: '斜体', icon: Italic, action: () => insertInline('*', '*', '斜体文字') },
-    { label: '无序列表', icon: List, action: () => insertLinePrefix('- ', '列表项') },
-    { label: '有序列表', icon: ListOrdered, action: () => insertLinePrefix('1. ', '列表项') },
-    { label: '引用', icon: Quote, action: () => insertLinePrefix('> ', '引用内容') },
-    { label: '代码', icon: Code2, action: () => insertInline('`', '`', 'code') },
-    { label: '代码块', icon: Code2, action: () => insertBlock('```js\nconsole.log(\"hello\");\n```\n', 6) },
-    { label: '链接', icon: LinkIcon, action: () => insertInline('[', '](https://example.com)', '链接文字') },
-    { label: '图片', icon: ImagePlus, action: () => insertInline('![', '](https://example.com/image.png)', '图片描述') },
-    { label: '分割线', icon: Minus, action: () => insertBlock('---\n') },
+  const toolbarGroups = [
+    {
+      label: '标题',
+      items: [
+        { label: '一级标题', short: 'H1', icon: Heading1, action: () => insertLinePrefix('# ', '一级标题') },
+        { label: '二级标题', short: 'H2', icon: Heading2, action: () => insertLinePrefix('## ', '二级标题') },
+        { label: '三级标题', short: 'H3', icon: Heading3, action: () => insertLinePrefix('### ', '三级标题') },
+      ],
+    },
+    {
+      label: '样式',
+      items: [
+        { label: '加粗', icon: Bold, action: () => insertInline('**', '**', '加粗文字') },
+        { label: '斜体', icon: Italic, action: () => insertInline('*', '*', '斜体文字') },
+        { label: '行内代码', icon: Code2, action: () => insertInline('`', '`', 'code') },
+      ],
+    },
+    {
+      label: '列表',
+      items: [
+        { label: '无序列表', icon: List, action: () => insertLinePrefix('- ', '列表项') },
+        { label: '有序列表', icon: ListOrdered, action: () => insertLinePrefix('1. ', '列表项') },
+        { label: '引用', icon: Quote, action: () => insertLinePrefix('> ', '引用内容') },
+      ],
+    },
+    {
+      label: '插入',
+      items: [
+        { label: '代码块', icon: Code2, action: () => insertBlock('```js\nconsole.log(\"hello\");\n```\n', 6) },
+        { label: '链接', icon: LinkIcon, action: () => insertInline('[', '](https://example.com)', '链接文字') },
+        { label: '图片', icon: ImagePlus, action: () => insertInline('![', '](https://example.com/image.png)', '图片描述') },
+        { label: '分割线', icon: Minus, action: () => insertBlock('---\n') },
+      ],
+    },
   ];
 
   if (initializing) {
@@ -415,22 +435,35 @@ export default function BlogArticleEditor() {
             </div>
           </div>
 
-          <div className="mb-3 flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-black/20 p-2">
-            {toolbarItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.label}
-                  type="button"
-                  onClick={item.action}
-                  title={item.label}
-                  className="inline-flex h-9 items-center gap-2 rounded-xl px-3 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{item.label}</span>
-                </button>
-              );
-            })}
+          <div className="mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-black/20 p-2">
+            {toolbarGroups.map((group) => (
+              <div
+                key={group.label}
+                className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1"
+              >
+                <span className="hidden px-2 text-[11px] font-medium text-slate-500 sm:inline">
+                  {group.label}
+                </span>
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={item.action}
+                      title={item.label}
+                      className="inline-flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold text-slate-300 transition hover:bg-purple-500/20 hover:text-white"
+                    >
+                      {'short' in item && item.short ? (
+                        <span>{item.short}</span>
+                      ) : (
+                        <Icon className="h-4 w-4" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)]">
