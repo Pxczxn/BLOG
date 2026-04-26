@@ -1,6 +1,8 @@
-
-
-
+/**
+ * 社区帖子服务
+ * <p>
+ * 处理社区帖子的增删改查、发布/下架和审核状态管理
+ */
 package com.pxczxn.blog.community.post.service;
 
 import com.pxczxn.blog.common.response.ApiErrorCode;
@@ -195,8 +197,7 @@ public class CommunityPostService {
 
     @Transactional(readOnly = true)
     public PublicCommunityPostDetailResponse getPublishedBySlug(String slug, Long viewerUserId) {
-        CommunityPost post = communityPostRepository.findBySlugAndStatus(slug, CommunityPostStatus.PUBLISHED)
-                .orElseThrow(() -> new CommunityPostNotFoundException(slug));
+        CommunityPost post = resolvePublishedPost(slug);
         CommunityNode node = loadNode(post.getNodeId());
         CommunityUser author = loadAuthor(post.getAuthorId());
         PostInteractionResponse interaction = communityInteractionService.getPostInteraction(post.getId(), viewerUserId);
@@ -214,11 +215,9 @@ public class CommunityPostService {
 
     @Transactional
     public void incrementViewCount(String slug) {
-        communityPostRepository.findBySlugAndStatus(slug, CommunityPostStatus.PUBLISHED)
-                .ifPresent(post -> {
-                    post.setViewCount((post.getViewCount() == null ? 0L : post.getViewCount()) + 1);
-                    communityPostRepository.save(post);
-                });
+        CommunityPost post = resolvePublishedPost(slug);
+        post.setViewCount((post.getViewCount() == null ? 0L : post.getViewCount()) + 1);
+        communityPostRepository.save(post);
     }
 
     @Transactional(readOnly = true)
@@ -356,6 +355,25 @@ public class CommunityPostService {
     private CommunityNode loadNode(Long nodeId) {
         return communityNodeRepository.findById(nodeId)
                 .orElseThrow(() -> new CommunityPostNotFoundException(nodeId));
+    }
+
+    private CommunityPost resolvePublishedPost(String slugOrId) {
+        return communityPostRepository.findBySlugAndStatus(slugOrId, CommunityPostStatus.PUBLISHED)
+                .or(() -> parsePostId(slugOrId)
+                        .flatMap(communityPostRepository::findById)
+                        .filter(post -> post.getStatus() == CommunityPostStatus.PUBLISHED))
+                .orElseThrow(() -> new CommunityPostNotFoundException(slugOrId));
+    }
+
+    private java.util.Optional<Long> parsePostId(String slugOrId) {
+        if (slugOrId == null || slugOrId.isBlank()) {
+            return java.util.Optional.empty();
+        }
+        try {
+            return java.util.Optional.of(Long.parseLong(slugOrId));
+        } catch (NumberFormatException ex) {
+            return java.util.Optional.empty();
+        }
     }
 
     private List<Long> normalizeTagIds(List<Long> tagIds) {

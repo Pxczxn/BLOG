@@ -11,6 +11,7 @@ import request, { getStaticUrl } from '../lib/request';
 import { format } from 'date-fns';
 import { useAuth } from '../lib/AuthContext';
 import RoleBadge from '../components/RoleBadge';
+import toast from 'react-hot-toast';
 
 export default function CommunityPostDetail() {
   const { slug } = useParams();
@@ -29,6 +30,7 @@ export default function CommunityPostDetail() {
         const res: any = await request.get(`/api/public/community/posts/${slug}`);
         const data = res?.data ?? res;
         setPost(data);
+        setIsLiked(Boolean(data?.likedByMe));
 
         request.post(`/api/public/community/posts/${slug}/view`).catch(console.error);
 
@@ -66,12 +68,11 @@ export default function CommunityPostDetail() {
     if (!post || !user || !commentContent.trim() || submitting) return;
     setSubmitting(true);
     try {
-      const res: any = await request.post(`/api/community/posts/${post.slug}/comments`, {
+      const res: any = await request.post(`/api/community/posts/${post.id}/comments`, {
         content: commentContent.trim()
       });
-      const newComment = res?.data ?? res;
-      setComments(prev => [...prev, newComment]);
       setCommentContent('');
+      toast.success('评论已提交，审核通过后会显示', { duration: 1800 });
     } catch (error) {
       console.error('Failed to submit comment:', error);
     } finally {
@@ -202,11 +203,11 @@ export default function CommunityPostDetail() {
             {comments.length > 0 ? comments.map((comment: any) => (
               <div key={comment.id} className="flex gap-4">
                 <div className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
-                   {comment.author?.avatar ? <img src={getStaticUrl(comment.author.avatar)} className="w-full h-full object-cover" /> : <Users className="w-5 h-5 text-slate-500" />}
+                   {comment.avatar ? <img src={getStaticUrl(comment.avatar)} className="w-full h-full object-cover" /> : <Users className="w-5 h-5 text-slate-500" />}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-slate-200">{comment.author?.username || '用户'}</span>
+                    <span className="text-sm font-medium text-slate-200">{comment.profileUsername || comment.nickname || '用户'}</span>
                     <span className="text-xs text-slate-500">{format(new Date(comment.createdAt || Date.now()), 'MM-dd HH:mm')}</span>
                   </div>
                   <div className="text-sm text-slate-300 leading-relaxed bg-white/5 p-4 rounded-xl rounded-tl-none border border-white/5">

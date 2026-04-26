@@ -704,7 +704,7 @@ public class ArticleService {
 
     @Transactional
     public void incrementViewCount(String slug) {
-        articleRepository.findBySlug(slug).ifPresent(article -> {
+        articleRepository.findBySlugAndStatus(slug, ArticleStatus.PUBLISHED).ifPresent(article -> {
             article.setViewCount((article.getViewCount() == null ? 0L : article.getViewCount()) + 1);
             articleRepository.save(article);
         });

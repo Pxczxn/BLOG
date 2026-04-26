@@ -1,8 +1,8 @@
-
-
-
-
-
+/**
+ * 生产环境管理员账号初始化。
+ * <p>
+ * 生产启动时必须通过环境变量提供管理员账号，避免使用迁移脚本中的固定默认密码上线。
+ */
 package com.pxczxn.blog.config;
 
 import com.pxczxn.blog.user.entity.AdminUser;
