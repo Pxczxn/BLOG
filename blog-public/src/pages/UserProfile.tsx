@@ -1,3 +1,6 @@
+
+
+
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -12,7 +15,7 @@ export default function UserProfile() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('profile'); 
   const [form, setForm] = useState({
     displayName: '',
     bio: '',
@@ -74,7 +77,8 @@ export default function UserProfile() {
       setSaving(true);
       const res: any = await request.post('/api/community/upload/avatar', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      });
+      
       const avatarUrl = res?.data?.url || res?.data || res?.url || res;
       if (typeof avatarUrl === 'string') {
         await request.patch('/api/community/me', { avatar: avatarUrl });
@@ -115,7 +119,7 @@ export default function UserProfile() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex flex-col md:flex-row gap-8">
         
-        {/* 侧边栏 */}
+        {}
         <div className="md:w-64 shrink-0 space-y-4">
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md flex flex-col items-center text-center">
             <div className="relative group mb-4">
@@ -175,7 +179,7 @@ export default function UserProfile() {
           </div>
         </div>
 
-        {/* 内容区域 */}
+        {}
         <div className="flex-1">
           <motion.div 
             key={activeTab}

@@ -1,8 +1,6 @@
 
 
 
-
-
 package com.pxczxn.blog.community.post.service;
 
 import com.pxczxn.blog.common.response.ApiErrorCode;
@@ -22,6 +20,7 @@ import com.pxczxn.blog.community.post.dto.CommunityPostAuthorSummaryResponse;
 import com.pxczxn.blog.community.post.dto.CommunityPostEditorResponse;
 import com.pxczxn.blog.community.post.dto.CommunityPostMineItemResponse;
 import com.pxczxn.blog.community.post.dto.CommunityPostNodeSummaryResponse;
+import com.pxczxn.blog.community.post.dto.CommunityPostTagSummaryResponse;
 import com.pxczxn.blog.community.post.dto.CommunityPostWriteRequest;
 import com.pxczxn.blog.community.post.dto.PublicCommunityPostDetailResponse;
 import com.pxczxn.blog.community.post.dto.PublicCommunityPostListItemResponse;
@@ -29,7 +28,10 @@ import com.pxczxn.blog.community.post.entity.CommunityPost;
 import com.pxczxn.blog.community.post.entity.CommunityPostStatus;
 import com.pxczxn.blog.community.post.exception.CommunityPostNotFoundException;
 import com.pxczxn.blog.community.post.repository.CommunityPostRepository;
+import com.pxczxn.blog.community.post.repository.CommunityPostTagQueryRepository;
 import com.pxczxn.blog.community.repository.CommunityUserRepository;
+import com.pxczxn.blog.tag.entity.Tag;
+import com.pxczxn.blog.tag.repository.TagRepository;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -72,6 +74,8 @@ public class CommunityPostService {
     private final CommunityUserRepository communityUserRepository;
     private final CommunityInteractionService communityInteractionService;
     private final ModerationService moderationService;
+    private final CommunityPostTagQueryRepository communityPostTagQueryRepository;
+    private final TagRepository tagRepository;
     private final SecureRandom secureRandom = new SecureRandom();
 
     @Transactional
@@ -93,11 +97,13 @@ public class CommunityPostService {
         post.setPublishedAt(null);
 
         CommunityPost saved = communityPostRepository.save(post);
+        List<Long> tagIds = normalizeTagIds(request.getTagIds());
+        communityPostTagQueryRepository.replaceTagsForPost(saved.getId(), tagIds);
         if (targetStatus == CommunityPostStatus.PENDING_REVIEW) {
             moderationService.submitPostForReview(saved, authorId);
             saved = communityPostRepository.findById(saved.getId()).orElse(saved);
         }
-        return CommunityPostEditorResponse.from(saved);
+        return CommunityPostEditorResponse.from(saved, buildTagSummaries(tagIds));
     }
 
     @Transactional
@@ -120,16 +126,19 @@ public class CommunityPostService {
         post.setPublishedAt(null);
 
         CommunityPost saved = communityPostRepository.save(post);
+        List<Long> tagIds = normalizeTagIds(request.getTagIds());
+        communityPostTagQueryRepository.replaceTagsForPost(saved.getId(), tagIds);
         if (targetStatus == CommunityPostStatus.PENDING_REVIEW) {
             moderationService.submitPostForReview(saved, authorId);
             saved = communityPostRepository.findById(saved.getId()).orElse(saved);
         }
-        return CommunityPostEditorResponse.from(saved);
+        return CommunityPostEditorResponse.from(saved, buildTagSummaries(tagIds));
     }
 
     @Transactional(readOnly = true)
     public CommunityPostEditorResponse getEditor(Long authorId, Long postId) {
-        return CommunityPostEditorResponse.from(getOwnedPost(authorId, postId));
+        CommunityPost post = getOwnedPost(authorId, postId);
+        return CommunityPostEditorResponse.from(post, buildTagSummaries(communityPostTagQueryRepository.findTagIdsByPostId(post.getId())));
     }
 
     @Transactional(readOnly = true)
@@ -165,6 +174,9 @@ public class CommunityPostService {
                 result.getContent().stream().map(CommunityPost::getId).toList(),
                 viewerUserId
         );
+        Map<Long, List<CommunityPostTagSummaryResponse>> tagsByPostId = loadTagSummariesByPostIds(
+                result.getContent().stream().map(CommunityPost::getId).toList()
+        );
         List<PublicCommunityPostListItemResponse> items = result.getContent().stream()
                 .map(post -> {
                     PostInteractionResponse interaction = interactions.getOrDefault(post.getId(), emptyInteraction(post.getId()));
@@ -173,7 +185,8 @@ public class CommunityPostService {
                             CommunityPostNodeSummaryResponse.from(nodes.get(post.getNodeId())),
                             CommunityPostAuthorSummaryResponse.from(authors.get(post.getAuthorId())),
                             interaction.getLikeCount(),
-                            interaction.getFavoriteCount()
+                            interaction.getFavoriteCount(),
+                            tagsByPostId.getOrDefault(post.getId(), List.of())
                     );
                 })
                 .toList();
@@ -194,7 +207,8 @@ public class CommunityPostService {
                 interaction.getLikeCount(),
                 interaction.getFavoriteCount(),
                 interaction.isLikedByMe(),
-                interaction.isFavoritedByMe()
+                interaction.isFavoritedByMe(),
+                buildTagSummaries(communityPostTagQueryRepository.findTagIdsByPostId(post.getId()))
         );
     }
 
@@ -342,6 +356,70 @@ public class CommunityPostService {
     private CommunityNode loadNode(Long nodeId) {
         return communityNodeRepository.findById(nodeId)
                 .orElseThrow(() -> new CommunityPostNotFoundException(nodeId));
+    }
+
+    private List<Long> normalizeTagIds(List<Long> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> normalized = tagIds.stream()
+                .filter(id -> id != null && id > 0)
+                .collect(java.util.stream.Collectors.collectingAndThen(
+                        java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new),
+                        List::copyOf
+                ));
+        if (normalized.isEmpty()) {
+            return List.of();
+        }
+
+        Set<Long> existing = tagRepository.findAllById(normalized).stream()
+                .map(Tag::getId)
+                .collect(java.util.stream.Collectors.toSet());
+        if (existing.size() != normalized.size()) {
+            throw new IllegalArgumentException("Tag not found");
+        }
+        return normalized;
+    }
+
+    private List<CommunityPostTagSummaryResponse> buildTagSummaries(List<Long> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, Tag> tagsById = tagRepository.findAllById(tagIds).stream()
+                .collect(java.util.stream.Collectors.toMap(Tag::getId, tag -> tag));
+        return tagIds.stream()
+                .map(tagsById::get)
+                .filter(tag -> tag != null)
+                .map(CommunityPostTagSummaryResponse::from)
+                .toList();
+    }
+
+    private Map<Long, List<CommunityPostTagSummaryResponse>> loadTagSummariesByPostIds(List<Long> postIds) {
+        if (postIds == null || postIds.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        Map<Long, List<Long>> tagIdsByPostId = communityPostTagQueryRepository.findTagIdsByPostIds(postIds);
+        Set<Long> tagIds = tagIdsByPostId.values().stream()
+                .flatMap(List::stream)
+                .collect(java.util.stream.Collectors.toSet());
+        if (tagIds.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        Map<Long, Tag> tagsById = tagRepository.findAllById(tagIds).stream()
+                .collect(java.util.stream.Collectors.toMap(Tag::getId, tag -> tag));
+        Map<Long, List<CommunityPostTagSummaryResponse>> result = new HashMap<>();
+        for (Map.Entry<Long, List<Long>> entry : tagIdsByPostId.entrySet()) {
+            List<CommunityPostTagSummaryResponse> tags = entry.getValue().stream()
+                    .map(tagsById::get)
+                    .filter(tag -> tag != null)
+                    .map(CommunityPostTagSummaryResponse::from)
+                    .toList();
+            result.put(entry.getKey(), tags);
+        }
+        return result;
     }
 
     private CommunityPostStatus resolveWritableStatus(CommunityPostStatus requestedStatus) {

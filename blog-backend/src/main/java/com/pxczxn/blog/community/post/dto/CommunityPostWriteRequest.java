@@ -9,6 +9,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class CommunityPostWriteRequest {
 
@@ -31,5 +33,8 @@ public class CommunityPostWriteRequest {
 
     
     private CommunityPostStatus status;
+
+    @Size(max = 5, message = "帖子标签最多选择5个")
+    private List<Long> tagIds;
 }
 
