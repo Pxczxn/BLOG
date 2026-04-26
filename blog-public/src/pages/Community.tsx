@@ -114,7 +114,7 @@ export default function Community() {
             animate={{ opacity: 1, x: 0 }}
             className="text-3xl font-black text-white drop-shadow-[0_0_15px_rgba(168,85,247,0.4)]"
           >
-            交流区
+            社区
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, x: -20 }}
@@ -122,7 +122,7 @@ export default function Community() {
             transition={{ delay: 0.1 }}
             className="mt-2 text-sm text-slate-400"
           >
-            这里先作为留言和轻讨论区，随手记录想法也很好。
+            目前先作为留言和轻讨论区，适合放问题、想法和项目记录。
           </motion.p>
         </div>
 
@@ -202,7 +202,7 @@ export default function Community() {
                         {topic.title}
                       </h3>
                       <span className="mt-2 inline-block text-xs text-slate-500 md:hidden">
-                        By {topic.author}
+                        来自 {topic.author}
                       </span>
                     </div>
                   </div>
@@ -236,20 +236,12 @@ export default function Community() {
           ) : (
             <EmptyState
               icon={MessageSquare}
-              title="交流区还在等第一条内容"
+              title="社区还在等第一条内容"
               description="可以发一个问题、一个想法，或者记录一下最近折腾项目时遇到的小坑。"
               actions={[{ label: user ? '发布帖子' : '登录后发布', to: publishPath }]}
             />
           )}
         </div>
-
-        {topics.length > 0 && (
-          <div className="p-4 text-center">
-            <button className="text-sm text-slate-400 transition-colors hover:text-white">
-              查看更多内容...
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

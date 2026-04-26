@@ -160,7 +160,7 @@ export default function Blog() {
           博客文章
         </h1>
         <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-400 md:text-base">
-          在这里按照分类和标签一起筛选文章，快速找到你最想读的内容。
+          按分类和标签筛选文章，慢慢把项目记录和技术笔记整理清楚。
         </p>
       </section>
 
@@ -207,7 +207,7 @@ export default function Blog() {
           />
           {tagFilter.hiddenCount > 0 && (
             <p className="mt-3 text-xs text-slate-500">
-              还有 {tagFilter.hiddenCount} 个标签，文章多了再展开。
+              还有 {tagFilter.hiddenCount} 个标签，后续内容多了再展开。
             </p>
           )}
 
@@ -238,7 +238,7 @@ export default function Blog() {
           <div className="flex flex-col gap-4">
             {loading ? (
               <div className="rounded-2xl border border-white/5 bg-white/5 py-12 text-center">
-                <p className="text-slate-400">正在筛选文章...</p>
+                <p className="text-slate-400">正在加载文章...</p>
               </div>
             ) : error ? (
               <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 px-4 py-3 text-sm text-amber-100/80">
@@ -254,7 +254,7 @@ export default function Blog() {
                 title={hasActiveFilters ? '还没有匹配的文章' : '文章正在整理中'}
                 description={
                   hasActiveFilters
-                    ? '换个分类或标签看看，后面内容多起来这里会更有用。'
+                    ? '换个分类或标签看看，也可以先清空筛选。'
                     : '这里会慢慢积累技术笔记、项目记录和复盘文章。'
                 }
                 actions={hasActiveFilters ? [] : [{ label: '先看资源页', to: '/resources' }]}

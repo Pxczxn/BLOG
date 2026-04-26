@@ -57,19 +57,19 @@ export default function Login() {
           
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-white tracking-tight">欢迎回来</h1>
-            <p className="text-slate-400 text-sm mt-2">登录您的社区账号</p>
+            <p className="text-slate-400 text-sm mt-2">登录你的社区账号</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">Username</label>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">用户名或邮箱</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input 
                   type="text" 
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  placeholder="昵称/邮箱"
+                  placeholder="用户名或邮箱"
                   className="w-full py-3 pl-11 pr-4 bg-black/20 border border-white/10 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all"
                   autoComplete="off"
                 />
@@ -77,7 +77,7 @@ export default function Login() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">Password</label>
+              <label className="text-xs font-medium text-slate-400 uppercase tracking-wider ml-1">密码</label>
               <div className="relative">
                 <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input 

@@ -70,8 +70,9 @@ export default function Navbar() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
             <input
               type="text"
-              placeholder="搜索内容..."
-              className="w-40 rounded-full border border-white/10 bg-white/5 py-1.5 pl-9 pr-4 text-sm text-white placeholder-slate-500 transition-all focus:w-56 focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+              placeholder="搜索功能整理中"
+              disabled
+              className="w-40 cursor-not-allowed rounded-full border border-white/10 bg-white/5 py-1.5 pl-9 pr-4 text-sm text-white/60 placeholder-slate-500 opacity-80"
             />
           </div>
 

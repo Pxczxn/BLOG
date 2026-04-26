@@ -5,7 +5,7 @@ const profile = {
   username: 'pxczxn',
   displayName: '破星辰只寻你',
   avatar: '/assets/avatar.png',
-  bio: '一个正在学习与探索 AI Coding 的全栈开发者。这里会记录技术、设计和持续构建过程中的思考与实践。',
+  bio: '一个正在学习与探索 AI Coding 的开发者。这里会记录技术、设计和持续构建过程中的思考与实践。',
   website: 'https://github.com/Pxczxn',
 };
 
@@ -91,15 +91,18 @@ export default function About() {
             </div>
 
             <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-8">
-              <p className="text-sm text-slate-500">个人链接: {profile.website}</p>
-              <motion.button
+              <p className="text-sm text-slate-500">个人链接：{profile.website}</p>
+              <motion.a
+                href={profile.website}
+                target="_blank"
+                rel="noreferrer"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="flex items-center gap-2 font-medium text-purple-400 transition-colors hover:text-purple-300"
               >
-                查看完整简介
+                去 GitHub 看看
                 <ChevronRight className="h-4 w-4" />
-              </motion.button>
+              </motion.a>
             </div>
           </div>
         </motion.div>

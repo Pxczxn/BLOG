@@ -22,7 +22,7 @@ Personal blog and community MVP for publishing articles, curating resources, and
 ```text
 blog-backend/    Spring Boot API service
 blog-public/     Public website and built-in admin pages
-blog-frontend/   Legacy/standalone admin frontend
+blog-frontend/   Optional standalone admin frontend
 ```
 
 ## Local Development
@@ -76,7 +76,7 @@ INITIAL_ADMIN_PASSWORD=
 
 ## Validation
 
-The publish copy was checked with:
+This release was checked with:
 
 ```bash
 cd blog-backend
@@ -84,7 +84,7 @@ mvnw test
 mvnw -DskipTests package
 ```
 
-Frontend source was also syntax-parsed after comment cleanup.
+Frontend source was also syntax-parsed before publishing.
 
 ## License
 

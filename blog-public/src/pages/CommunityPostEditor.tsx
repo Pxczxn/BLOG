@@ -68,7 +68,7 @@ export default function CommunityPostEditor() {
         
         {!user && (
           <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-yellow-400 text-sm">
-            提示：您必须先 <Link to="/login?redirect=/community/new" className="underline font-bold">登录</Link> 才能发布帖子。
+            提示：请先 <Link to="/login?redirect=/community/new" className="underline font-bold">登录</Link> 再发布帖子。
           </div>
         )}
 
@@ -79,26 +79,26 @@ export default function CommunityPostEditor() {
               type="text" 
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="请输入一个有吸引力的标题"
+              placeholder="写一个清楚的问题或主题"
               className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-purple-500/50 transition-all"
               disabled={!user}
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2">标签 (用逗号分隔)</label>
+            <label className="block text-sm font-medium text-slate-400 mb-2">标签（用逗号分隔）</label>
             <input 
               type="text" 
               value={tags}
               onChange={e => setTags(e.target.value)}
-              placeholder="例如: React, 经验分享, 求助"
+              placeholder="例如：React, 经验分享, 求助"
               className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-purple-500/50 transition-all"
               disabled={!user}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2">正文 (支持 Markdown)</label>
+            <label className="block text-sm font-medium text-slate-400 mb-2">正文（支持 Markdown）</label>
             <textarea 
               value={content}
               onChange={e => setContent(e.target.value)}

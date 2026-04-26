@@ -20,7 +20,7 @@
 ```text
 blog-backend/    Spring Boot 后端服务
 blog-public/     前台站点与内置管理页面
-blog-frontend/   独立后台前端
+blog-frontend/   可选的独立后台前端
 ```
 
 ## 本地运行
@@ -82,7 +82,7 @@ mvnw test
 mvnw -DskipTests package
 ```
 
-去注释后的前端源码也做过语法解析检查。
+前端源码也做过语法解析检查。
 
 ## License
 

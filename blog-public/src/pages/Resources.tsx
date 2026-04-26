@@ -22,7 +22,7 @@ const RESOURCE_SECTIONS: ResourceSection[] = [
   {
     key: 'tools',
     title: '在线工具',
-    subtitle: '站内常用工具集合',
+    subtitle: '常用在线工具入口',
     icon: <Wrench className="h-5 w-5 text-blue-400" />,
     items: [
       { name: '代码格式化', desc: 'Prettier 在线格式化与配置预览', link: 'https://prettier.io/playground/', type: 'tool' },
@@ -33,12 +33,12 @@ const RESOURCE_SECTIONS: ResourceSection[] = [
   {
     key: 'assets',
     title: '精选素材',
-    subtitle: '高质量设计与开发素材',
+    subtitle: '设计与开发素材入口',
     icon: <Layout className="h-5 w-5 text-purple-400" />,
     items: [
       { name: 'UI 设计模板', desc: 'Figma Community 设计资源', link: 'https://www.figma.com/community', type: 'download' },
       { name: '壁纸图库', desc: 'Unsplash 高质量壁纸图库', link: 'https://unsplash.com/wallpapers', type: 'download' },
-      { name: '图标资源包', desc: 'Lucide 常用线性图标库', link: 'https://lucide.dev/icons/', type: 'download' },
+      { name: '线性图标库', desc: 'Lucide 常用图标入口', link: 'https://lucide.dev/icons/', type: 'download' },
     ],
   },
   {
@@ -66,7 +66,7 @@ export default function Resources() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-5 text-5xl font-black text-white drop-shadow-[0_0_15px_rgba(168,85,247,0.4)]"
         >
-          {selectedSection ? selectedSection.title : '资源宝库'}
+          {selectedSection ? selectedSection.title : '资源收藏'}
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -76,7 +76,7 @@ export default function Resources() {
         >
           {selectedSection
             ? selectedSection.subtitle
-            : '搜集并整理互联网上的优质工具与素材，为你节省每一个寻找的时间。'}
+            : '先放一些常用工具和入口，后续再按使用频率慢慢补齐。'}
         </motion.p>
 
         <div className="mx-auto mt-6 inline-flex flex-wrap items-center justify-center gap-1 rounded-full border border-white/10 bg-white/5 p-1">
