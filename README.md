@@ -1,46 +1,32 @@
-# BLOG
+﻿# Pxczxn Blog
 
-Personal blog and community MVP for publishing articles, curating resources, and running a lightweight admin workflow.
+个人博客系统，包含公开博客端、管理后台和 Spring Boot API。
 
-[中文说明](./README.zh-CN.md)
+## 技术栈
 
-## What Is Included
+- 后端: Java 21, Spring Boot, Spring Security, JPA, Flyway, MySQL 8
+- 博客前台: React + Vite (`blog-public`)
+- 管理后台: React + Vite (`blog-frontend`)
+- 网关/静态服务: Nginx
 
-- Public site: home page, blog list/detail, resource pages, community pages, login and registration.
-- Admin console: article management, category/tag management, moderation, dashboard, uploads, and account flows.
-- Backend API: Spring Boot service with JWT authentication, Flyway migrations, MySQL persistence, upload handling, and tests.
-- Deployment-ready defaults: no public default admin account is seeded by migrations; production admin bootstrap reads environment variables.
+## 项目结构
 
-## Tech Stack
+- `blog-backend`: 后端服务
+- `blog-public`: 公开博客前端
+- `blog-frontend`: 管理后台前端
 
-- Public frontend: React 19, TypeScript, Vite, Tailwind CSS, React Router, Axios.
-- Admin frontend: React 19, Vite, Ant Design, Tailwind CSS, React Router, Axios.
-- Backend: Java 21, Spring Boot 4, Spring Security, Spring Data JPA, Flyway, MySQL, JJWT.
+## 本地开发
 
-## Project Structure
-
-```text
-blog-backend/    Spring Boot API service
-blog-public/     Public website and built-in admin pages
-blog-frontend/   Optional standalone admin frontend
-```
-
-## Local Development
-
-### Backend
+### 1) 后端
 
 ```bash
 cd blog-backend
-copy .env.example .env
+mvn clean spring-boot:run
 ```
 
-Fill the empty values in `.env`, then run:
+默认端口: `4002`
 
-```bash
-mvnw spring-boot:run
-```
-
-### Public Frontend
+### 2) 博客前台
 
 ```bash
 cd blog-public
@@ -48,9 +34,9 @@ npm install
 npm run dev
 ```
 
-The public frontend defaults to port `4000`.
+默认端口: `4000`
 
-### Admin Frontend
+### 3) 管理后台
 
 ```bash
 cd blog-frontend
@@ -58,34 +44,31 @@ npm install
 npm run dev
 ```
 
-## Production Notes
+默认端口: `4001`
 
-For production, run the backend with the `prod` profile and provide these variables:
+## 生产部署约定
 
-```env
-DB_URL=
-DB_USERNAME=
-DB_PASSWORD=
-JWT_SECRET=
-INITIAL_ADMIN_USERNAME=
-INITIAL_ADMIN_EMAIL=
-INITIAL_ADMIN_PASSWORD=
-```
+当前生产目录规范:
 
-`INITIAL_ADMIN_PASSWORD` must be at least 12 characters. The app will create or update the initial admin only when the `prod` profile is active and all three `INITIAL_ADMIN_*` values are present.
+- 后端目录: `/app/blog/backend`
+- 公开站静态目录: `/app/blog/frontend`
+- 历史目录 `/app/blog/public`: 当前未被 `pxczxn.top` 的 Nginx `root` 使用，更新公开站时不要只发这里
+- 上传目录: `/app/blog/upload`
+- Nginx 站点配置: `/etc/nginx/sites-available/<your-domain>`
 
-## Validation
+关键路由:
 
-This release was checked with:
+- 博客前台: `/`
+- 管理后台: `/admin-pxczxn/`
+- API: `/api/` -> `127.0.0.1:8080`
+- 上传静态文件: `/uploads/` -> `/app/blog/upload/`
 
-```bash
-cd blog-backend
-mvnw test
-mvnw -DskipTests package
-```
+## SQL 迁移
 
-Frontend source was also syntax-parsed before publishing.
+- 仅保留并使用：`blog-backend/src/main/resources/db/migration/`
+- 不再维护根目录 `sql/` 副本，避免重复与漂移
 
-## License
+## 安全说明
 
-No license has been declared yet. Add one before accepting external contributions.
+- 不要在仓库中提交任何明文密码、私钥、服务器敏感地址。
+- 推荐通过环境变量注入 `DB_PASSWORD`、`JWT_SECRET`、`FILE_UPLOAD_DIR`。

@@ -119,6 +119,7 @@ export default function Blog() {
 
           return {
             id: item.slug || String(item.id),
+            slug: item.slug || undefined,
             title: item.title || '无标题',
             summary: item.summary || '',
             coverImage: getStaticUrl(item.coverImage || ''),

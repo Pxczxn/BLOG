@@ -17,6 +17,7 @@ type CommunityNode = {
 
 type Topic = {
   id: string;
+  slug: string;
   title: string;
   node?: {
     name: string;
@@ -69,6 +70,7 @@ export default function Community() {
 
         const normalized: Topic[] = items.map((item: any) => ({
           id: item.id || item.slug,
+          slug: item.slug || String(item.id),
           title: item.title,
           node: item.node
             ? {
@@ -167,7 +169,7 @@ export default function Community() {
             </div>
           ) : topics.length > 0 ? (
             topics.map((topic, index) => (
-              <Link to={`/community/post/${topic.id}`} key={topic.id}>
+              <Link to={`/community/post/${topic.slug}`} key={topic.id}>
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
