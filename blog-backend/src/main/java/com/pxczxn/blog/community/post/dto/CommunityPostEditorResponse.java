@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -37,6 +38,7 @@ public class CommunityPostEditorResponse {
     private LocalDateTime updatedAt;
     /** 发布时间 */
     private LocalDateTime publishedAt;
+    private List<CommunityPostTagSummaryResponse> tags;
 
     /**
      * 从帖子实体转换为编辑器响应对象
@@ -45,6 +47,10 @@ public class CommunityPostEditorResponse {
      * @return 编辑器响应对象
      */
     public static CommunityPostEditorResponse from(CommunityPost post) {
+        return from(post, List.of());
+    }
+
+    public static CommunityPostEditorResponse from(CommunityPost post, List<CommunityPostTagSummaryResponse> tags) {
         return CommunityPostEditorResponse.builder()
                 .id(post.getId())
                 .nodeId(post.getNodeId())
@@ -58,6 +64,7 @@ public class CommunityPostEditorResponse {
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .publishedAt(post.getPublishedAt())
+                .tags(tags)
                 .build();
     }
 }

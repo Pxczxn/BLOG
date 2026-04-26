@@ -17,6 +17,7 @@ type CommunityNode = {
 
 type Topic = {
   id: string;
+  slug: string;
   title: string;
   node?: {
     name: string;
@@ -69,6 +70,7 @@ export default function Community() {
 
         const normalized: Topic[] = items.map((item: any) => ({
           id: item.id || item.slug,
+          slug: item.slug || String(item.id),
           title: item.title,
           node: item.node
             ? {
@@ -114,7 +116,7 @@ export default function Community() {
             animate={{ opacity: 1, x: 0 }}
             className="text-3xl font-black text-white drop-shadow-[0_0_15px_rgba(168,85,247,0.4)]"
           >
-            交流区
+            社区
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, x: -20 }}
@@ -122,7 +124,7 @@ export default function Community() {
             transition={{ delay: 0.1 }}
             className="mt-2 text-sm text-slate-400"
           >
-            这里先作为留言和轻讨论区，随手记录想法也很好。
+            把问题、灵感和项目进展放在这里，慢慢沉淀成可回看的讨论记录。
           </motion.p>
         </div>
 
@@ -167,7 +169,7 @@ export default function Community() {
             </div>
           ) : topics.length > 0 ? (
             topics.map((topic, index) => (
-              <Link to={`/community/post/${topic.id}`} key={topic.id}>
+              <Link to={`/community/post/${topic.slug}`} key={topic.id}>
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -236,8 +238,8 @@ export default function Community() {
           ) : (
             <EmptyState
               icon={MessageSquare}
-              title="交流区还在等第一条内容"
-              description="可以发一个问题、一个想法，或者记录一下最近折腾项目时遇到的小坑。"
+              title="还没有帖子，先开个头吧"
+              description="可以抛一个问题、记一段踩坑经历，或者分享最近正在打磨的小功能。"
               actions={[{ label: user ? '发布帖子' : '登录后发布', to: publishPath }]}
             />
           )}

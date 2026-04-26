@@ -10,6 +10,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class ArticleCreateRequest {
 
@@ -35,4 +37,7 @@ public class ArticleCreateRequest {
 
     /** 发布状态（选填，默认为DRAFT） */
     private ArticleStatus status;
+
+    @Size(max = 8, message = "文章标签最多选择8个")
+    private List<Long> tagIds;
 }

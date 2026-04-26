@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -43,6 +44,7 @@ public class PublicCommunityPostDetailResponse {
     private boolean likedByMe;
     /** 当前用户是否已收藏 */
     private boolean favoritedByMe;
+    private List<CommunityPostTagSummaryResponse> tags;
 
     /**
      * 从帖子实体转换为公开详情响应
@@ -63,6 +65,17 @@ public class PublicCommunityPostDetailResponse {
                                                          long favoriteCount,
                                                          boolean likedByMe,
                                                          boolean favoritedByMe) {
+        return from(post, node, author, likeCount, favoriteCount, likedByMe, favoritedByMe, List.of());
+    }
+
+    public static PublicCommunityPostDetailResponse from(CommunityPost post,
+                                                         CommunityPostNodeSummaryResponse node,
+                                                         CommunityPostAuthorSummaryResponse author,
+                                                         long likeCount,
+                                                         long favoriteCount,
+                                                         boolean likedByMe,
+                                                         boolean favoritedByMe,
+                                                         List<CommunityPostTagSummaryResponse> tags) {
         return PublicCommunityPostDetailResponse.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -79,6 +92,7 @@ public class PublicCommunityPostDetailResponse {
                 .favoriteCount(favoriteCount)
                 .likedByMe(likedByMe)
                 .favoritedByMe(favoritedByMe)
+                .tags(tags)
                 .build();
     }
 }

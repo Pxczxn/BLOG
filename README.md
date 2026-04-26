@@ -51,7 +51,8 @@ npm run dev
 当前生产目录规范:
 
 - 后端目录: `/app/blog/backend`
-- 前端目录: `/app/blog/frontend`
+- 公开站静态目录: `/app/blog/frontend`
+- 历史目录 `/app/blog/public`: 当前未被 `pxczxn.top` 的 Nginx `root` 使用，更新公开站时不要只发这里
 - 上传目录: `/app/blog/upload`
 - Nginx 站点配置: `/etc/nginx/sites-available/<your-domain>`
 

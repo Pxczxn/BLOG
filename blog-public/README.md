@@ -1,20 +1,21 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Pxczxn Blog Public
 
-# Run and deploy your AI Studio app
+公开博客前台，基于 React + Vite + Tailwind CSS。
 
-This contains everything you need to run your app locally.
+## 本地开发
 
-View your app in AI Studio: https://ai.studio/apps/a4f30c3e-e74b-458e-80b5-a5331b25729e
+```bash
+npm install
+npm run dev
+```
 
-## Run Locally
+默认端口：`4000`。
 
-**Prerequisites:**  Node.js
+## 构建
 
+```bash
+npm run lint
+npm run build
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+生产 API 地址通过 `VITE_API_BASE_URL` 配置；如果前端和后端同域部署，可以保持为空或使用同域反向代理。

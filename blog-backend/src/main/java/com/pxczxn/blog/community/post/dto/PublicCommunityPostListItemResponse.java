@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -35,6 +36,7 @@ public class PublicCommunityPostListItemResponse {
     private long likeCount;
     /** 收藏数 */
     private long favoriteCount;
+    private List<CommunityPostTagSummaryResponse> tags;
 
     /**
      * 从帖子实体转换为公开列表项响应
@@ -51,6 +53,15 @@ public class PublicCommunityPostListItemResponse {
                                                            CommunityPostAuthorSummaryResponse author,
                                                            long likeCount,
                                                            long favoriteCount) {
+        return from(post, node, author, likeCount, favoriteCount, List.of());
+    }
+
+    public static PublicCommunityPostListItemResponse from(CommunityPost post,
+                                                           CommunityPostNodeSummaryResponse node,
+                                                           CommunityPostAuthorSummaryResponse author,
+                                                           long likeCount,
+                                                           long favoriteCount,
+                                                           List<CommunityPostTagSummaryResponse> tags) {
         return PublicCommunityPostListItemResponse.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -63,6 +74,7 @@ public class PublicCommunityPostListItemResponse {
                 .viewCount(post.getViewCount())
                 .likeCount(likeCount)
                 .favoriteCount(favoriteCount)
+                .tags(tags)
                 .build();
     }
 }

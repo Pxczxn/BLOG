@@ -10,6 +10,7 @@ import { cn } from '../lib/utils';
 
 export interface Article {
   id: string;
+  slug?: string;
   title: string;
   summary?: string;
   coverImage: string;
@@ -20,6 +21,8 @@ export interface Article {
 }
 
 export default function ArticleCard({ article, delay = 0 }: { article: Article; delay?: number }) {
+  const articlePath = article.slug || article.id;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -27,7 +30,7 @@ export default function ArticleCard({ article, delay = 0 }: { article: Article; 
       transition={{ delay }}
     >
       <Link 
-        to={`/post/${article.id}`} 
+        to={`/post/${articlePath}`} 
         className="bg-white/[0.02] border border-white/5 rounded-3xl p-5 flex flex-col sm:flex-row gap-6 backdrop-blur-sm hover:bg-white/[0.05] hover:border-white/10 transition-all cursor-pointer group relative"
       >
         {article.isPinned && (

@@ -6,6 +6,7 @@
 package com.pxczxn.blog.tag.service;
 
 import com.pxczxn.blog.content.repository.ArticleTagQueryRepository;
+import com.pxczxn.blog.community.post.repository.CommunityPostTagQueryRepository;
 import com.pxczxn.blog.tag.dto.TagCreateRequest;
 import com.pxczxn.blog.tag.entity.Tag;
 import com.pxczxn.blog.tag.exception.TagNotFoundException;
@@ -45,6 +46,7 @@ public class TagService {
     private final TagRepository tagRepository;
     /** 文章-标签关联数据访问 */
     private final ArticleTagQueryRepository articleTagQueryRepository;
+    private final CommunityPostTagQueryRepository communityPostTagQueryRepository;
     /** 安全随机数生成器 */
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -95,6 +97,7 @@ public class TagService {
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new TagNotFoundException(id));
         articleTagQueryRepository.deleteByTagId(id);
+        communityPostTagQueryRepository.deleteByTagId(id);
         tagRepository.delete(tag);
     }
 

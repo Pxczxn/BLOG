@@ -9,6 +9,7 @@ import RequireAdminAuth from './components/RequireAdminAuth';
 
 const Home = lazy(() => import('./pages/Home'));
 const Blog = lazy(() => import('./pages/Blog'));
+const BlogArticleEditor = lazy(() => import('./pages/BlogArticleEditor'));
 const Category = lazy(() => import('./pages/Category'));
 const Tags = lazy(() => import('./pages/Tags'));
 const Community = lazy(() => import('./pages/Community'));
@@ -75,6 +76,7 @@ export default function App() {
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="blog" element={<Blog />} />
+              <Route path="blog/new" element={<BlogArticleEditor />} />
               <Route path="category" element={<Category />} />
               <Route path="tags" element={<Tags />} />
               <Route path="post/:slug" element={<ArticleDetail />} />

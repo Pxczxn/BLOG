@@ -32,8 +32,8 @@ import java.util.UUID;
 @RequestMapping("/api/community")
 public class CommunityUploadController {
 
-    /** 最大文件大小限制：2MB */
-    private static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
+    /** 最大文件大小限制：5MB */
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
     /** 允许的图片 Content-Type */
     private static final Set<String> IMAGE_CONTENT_TYPES = Set.of("image/png", "image/jpeg", "image/webp", "image/gif");
     /** PNG 文件扩展名 */
@@ -57,13 +57,22 @@ public class CommunityUploadController {
      */
     @PostMapping("/upload/avatar")
     public Result<UploadResponse> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        return uploadImage(file, "avatars", "社区用户头像上传成功", "头像上传失败");
+    }
+
+    @PostMapping("/upload/cover")
+    public Result<UploadResponse> uploadCover(@RequestParam("file") MultipartFile file) {
+        return uploadImage(file, "covers", "文章封面上传成功", "文章封面上传失败");
+    }
+
+    private Result<UploadResponse> uploadImage(MultipartFile file, String dir, String successLog, String errorLog) {
         validateFile(file);
 
         try {
             DetectedImageType imageType = detectImageType(file);
             validateFileMetadata(file, imageType);
 
-            String relativePath = buildFilePath(imageType.extension());
+            String relativePath = buildFilePath(dir, imageType.extension());
             Path uploadRoot = Paths.get(uploadDir).toAbsolutePath().normalize();
             Path fullPath = uploadRoot.resolve(relativePath).normalize();
             if (!fullPath.startsWith(uploadRoot)) {
@@ -73,7 +82,7 @@ public class CommunityUploadController {
             Files.createDirectories(fullPath.getParent());
             file.transferTo(fullPath);
 
-            log.info("社区用户头像上传成功: {}", relativePath);
+            log.info("{}: {}", successLog, relativePath);
             UploadResponse response = UploadResponse.builder()
                     .url("/uploads/" + relativePath.replace('\\', '/'))
                     .filename(fullPath.getFileName().toString())
@@ -82,7 +91,7 @@ public class CommunityUploadController {
 
             return Result.success(response);
         } catch (IOException ex) {
-            log.error("头像上传失败", ex);
+            log.error(errorLog, ex);
             throw UploadException.uploadFailed(ex.getMessage());
         }
     }
@@ -205,11 +214,11 @@ public class CommunityUploadController {
      * @param extension 文件扩展名
      * @return 相对于上传根目录的文件路径
      */
-    private String buildFilePath(String extension) {
+    private String buildFilePath(String dir, String extension) {
         YearMonth now = YearMonth.now();
         String monthPath = now.format(DateTimeFormatter.ofPattern("yyyy/MM"));
         String filename = UUID.randomUUID().toString().replace("-", "") + "." + extension;
-        return Path.of("avatars", monthPath, filename).toString();
+        return Path.of(dir, monthPath, filename).toString();
     }
 
     /**

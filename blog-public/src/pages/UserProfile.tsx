@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
+import toast from 'react-hot-toast';
 import { User, Mail, Link as LinkIcon, Edit3, LogOut, Bell, FileText, Camera } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import request, { getStaticUrl } from '../lib/request';
@@ -57,9 +58,9 @@ export default function UserProfile() {
       setSaving(true);
       await request.patch('/api/community/me', form);
       await refreshUser();
-      alert('资料更新成功');
+      toast.success('资料更新成功', { duration: 1500 });
     } catch (error: any) {
-      alert(error.message || '更新失败');
+      toast.error(error.message || '更新失败', { duration: 1800 });
     } finally {
       setSaving(false);
     }
@@ -82,11 +83,12 @@ export default function UserProfile() {
       if (typeof avatarUrl === 'string') {
         await request.patch('/api/community/me', { avatar: avatarUrl });
         await refreshUser();
+        toast.success('头像更新成功', { duration: 1500 });
       } else {
-        alert('头像上传成功但获取URL失败');
+        toast.error('头像上传成功，但没有拿到图片地址', { duration: 1800 });
       }
     } catch (error: any) {
-      alert(error.message || '头像上传失败');
+      toast.error(error.message || '头像上传失败', { duration: 1800 });
     } finally {
       setSaving(false);
     }

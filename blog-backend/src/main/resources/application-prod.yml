@@ -41,6 +41,11 @@ app:
     allowed-origins: ${CORS_ORIGINS}
   security:
     cookie-secure: true
+  admin:
+    initial:
+      username: ${INITIAL_ADMIN_USERNAME:}
+      email: ${INITIAL_ADMIN_EMAIL:}
+      password: ${INITIAL_ADMIN_PASSWORD:}
 
 server:
   port: ${SERVER_PORT:8080}

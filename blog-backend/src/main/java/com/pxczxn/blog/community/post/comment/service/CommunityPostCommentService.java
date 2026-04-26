@@ -43,8 +43,7 @@ public class CommunityPostCommentService {
 
     @Transactional(readOnly = true)
     public List<CommunityPostCommentItemResponse> listByPostSlug(String slug) {
-        CommunityPost post = communityPostRepository.findBySlugAndStatus(slug, CommunityPostStatus.PUBLISHED)
-                .orElseThrow(() -> new CommunityPostNotFoundException(slug));
+        CommunityPost post = resolvePublishedPost(slug);
 
         List<CommunityPostComment> comments = communityPostCommentRepository.findByPostIdAndStatusOrderByCreatedAtAsc(
                 post.getId(),
@@ -132,6 +131,25 @@ public class CommunityPostCommentService {
             throw new CommunityPostNotFoundException(postId);
         }
         return post;
+    }
+
+    private CommunityPost resolvePublishedPost(String slugOrId) {
+        return communityPostRepository.findBySlugAndStatus(slugOrId, CommunityPostStatus.PUBLISHED)
+                .or(() -> parsePostId(slugOrId)
+                        .flatMap(communityPostRepository::findById)
+                        .filter(post -> post.getStatus() == CommunityPostStatus.PUBLISHED))
+                .orElseThrow(() -> new CommunityPostNotFoundException(slugOrId));
+    }
+
+    private java.util.Optional<Long> parsePostId(String slugOrId) {
+        if (slugOrId == null || slugOrId.isBlank()) {
+            return java.util.Optional.empty();
+        }
+        try {
+            return java.util.Optional.of(Long.parseLong(slugOrId));
+        } catch (NumberFormatException ex) {
+            return java.util.Optional.empty();
+        }
     }
 
     private CommunityUser getActiveUser(Long userId) {
