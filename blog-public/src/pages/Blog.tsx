@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { FileText, Filter, X } from 'lucide-react';
+import { FileText, Filter, SquarePen, X } from 'lucide-react';
 import ArticleCard, { type Article } from '../components/ArticleCard';
 import EmptyState from '../components/EmptyState';
 import request, { getStaticUrl } from '../lib/request';
+import { useAuth } from '../lib/AuthContext';
 
 type CategoryOption = {
   id?: number | string;
@@ -30,6 +32,7 @@ export default function Blog() {
   const [loading, setLoading] = useState(true);
   const [metaLoading, setMetaLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const selectedCategoryLabel = useMemo(() => {
     if (selectedCategory === 'all') return '全部分类';
@@ -151,6 +154,7 @@ export default function Blog() {
   };
 
   const hasActiveFilters = selectedCategory !== 'all' || selectedTag !== 'all';
+  const writeArticlePath = user ? '/blog/new' : '/login?redirect=/blog/new';
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -160,8 +164,17 @@ export default function Blog() {
           博客文章
         </h1>
         <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-400 md:text-base">
-          按分类和标签筛选文章，慢慢把项目记录和技术笔记整理清楚。
+          在这里按照分类和标签一起筛选文章，快速找到你最想读的内容。
         </p>
+        <div className="mt-5 flex justify-center">
+          <Link
+            to={writeArticlePath}
+            className="inline-flex items-center gap-2 rounded-full border border-purple-400/40 bg-purple-600/25 px-5 py-2 text-sm font-semibold text-white shadow-[0_0_20px_rgba(168,85,247,0.22)] transition hover:border-purple-300 hover:bg-purple-500/35"
+          >
+            <SquarePen className="h-4 w-4" />
+            {user ? '写文章' : '登录后写文章'}
+          </Link>
+        </div>
       </section>
 
       <main className="relative z-10 grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
@@ -207,7 +220,7 @@ export default function Blog() {
           />
           {tagFilter.hiddenCount > 0 && (
             <p className="mt-3 text-xs text-slate-500">
-              还有 {tagFilter.hiddenCount} 个标签，后续内容多了再展开。
+              还有 {tagFilter.hiddenCount} 个标签，文章多了再展开。
             </p>
           )}
 
@@ -238,7 +251,7 @@ export default function Blog() {
           <div className="flex flex-col gap-4">
             {loading ? (
               <div className="rounded-2xl border border-white/5 bg-white/5 py-12 text-center">
-                <p className="text-slate-400">正在加载文章...</p>
+                <p className="text-slate-400">正在筛选文章...</p>
               </div>
             ) : error ? (
               <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 px-4 py-3 text-sm text-amber-100/80">
@@ -254,10 +267,16 @@ export default function Blog() {
                 title={hasActiveFilters ? '还没有匹配的文章' : '文章正在整理中'}
                 description={
                   hasActiveFilters
-                    ? '换个分类或标签看看，也可以先清空筛选。'
+                    ? '换个分类或标签看看，后面内容多起来这里会更有用。'
                     : '这里会慢慢积累技术笔记、项目记录和复盘文章。'
                 }
-                actions={hasActiveFilters ? [] : [{ label: '先看资源页', to: '/resources' }]}
+                actions={
+                  hasActiveFilters
+                    ? []
+                    : user
+                      ? [{ label: '写第一篇文章', to: '/blog/new' }]
+                      : [{ label: '登录后写文章', to: writeArticlePath }, { label: '先看资源页', to: '/resources' }]
+                }
               />
             )}
           </div>

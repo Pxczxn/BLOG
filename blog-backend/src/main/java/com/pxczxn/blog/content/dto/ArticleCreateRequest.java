@@ -1,14 +1,13 @@
 
 
-
-
-
 package com.pxczxn.blog.content.dto;
 
 import com.pxczxn.blog.content.entity.ArticleStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class ArticleCreateRequest {
@@ -35,4 +34,7 @@ public class ArticleCreateRequest {
 
     
     private ArticleStatus status;
+
+    @Size(max = 8, message = "文章标签最多选择8个")
+    private List<Long> tagIds;
 }

@@ -1,11 +1,6 @@
 
 
 
-
-
-
-
-
 package com.pxczxn.blog.content.entity;
 
 import com.pxczxn.blog.common.entity.BaseTimeEntity;
@@ -74,10 +69,12 @@ public class Article extends BaseTimeEntity {
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 
-    
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false,
+    @JoinColumn(name = "author_id",
             foreignKey = @ForeignKey(name = "fk_article_author"))
     private AdminUser author;
+
+    @Column(name = "community_author_id")
+    private Long communityAuthorId;
 }
 
