@@ -1,3 +1,8 @@
+/**
+ * 文章编辑页
+ * <p>
+ * 新建和编辑文章的富文本编辑器页面
+ */
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Select, App, Upload, Tooltip } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -9,6 +14,11 @@ import { toRelativeMediaUrl } from '../../utils/media';
 const { Option } = Select;
 const { TextArea } = Input;
 
+/**
+ * 文章编辑组件
+ * 支持新建和编辑已有文章，包含标题、正文（Markdown）、分类、标签、封面图和摘要
+ * @returns {JSX.Element} 文章编辑页面
+ */
 const ArticleEdit = () => {
     const { message } = App.useApp();
     const [form] = Form.useForm();
@@ -23,17 +33,11 @@ const ArticleEdit = () => {
     const isEdit = !!id;
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            navigate('/login');
-            return;
-        }
-
         fetchOptions();
         if (isEdit) {
             fetchArticle();
         }
-    }, [id, navigate]);
+    }, [id, isEdit]);
 
     const fetchOptions = async () => {
         try {

@@ -1,100 +1,195 @@
-import React from 'react';
-import { Layout, Menu, Dropdown, Avatar } from 'antd';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Dropdown, Avatar } from 'antd';
+import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import {
-    FileTextOutlined,
-    FolderOpenOutlined,
-    TagsOutlined,
-    CommentOutlined,
-    LogoutOutlined,
-} from '@ant-design/icons';
+  LayoutDashboard,
+  FileText,
+  FolderTree,
+  Tags,
+  MessageSquare,
+  Flame,
+  ShieldAlert,
+  Flag,
+  Search,
+  Bell,
+  LogOut,
+} from 'lucide-react';
+import { clearAdminToken } from '../auth/storage';
+import request from '../utils/request';
 import { adminAssetPath } from '../utils/path';
 
-const { Header, Content } = Layout;
+const MENU_ITEMS = [
+  { path: '/articles', icon: FileText, label: '文章管理' },
+  { path: '/categories', icon: FolderTree, label: '分类管理' },
+  { path: '/tags', icon: Tags, label: '标签管理' },
+  { path: '/comments', icon: MessageSquare, label: '评论管理' },
+  { path: '/community-posts', icon: MessageSquare, label: '社区帖子' },
+  { path: '/community-interactions', icon: Flame, label: '互动数据' },
+  { path: '/moderation-tasks', icon: ShieldAlert, label: '审核任务' },
+  { path: '/content-reports', icon: Flag, label: '举报处理' },
+];
 
 const BasicLayout = () => {
-    const navigate = useNavigate();
-    const location = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const contentRef = useRef(null);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await request.post('/api/admin/logout');
+    } catch (error) {
+      console.error('Admin logout failed', error);
+    } finally {
+      clearAdminToken();
+      navigate('/login', { replace: true });
+    }
+  };
+
+  const isEditorPage =
+    location.pathname.includes('/articles/new') ||
+    location.pathname.includes('/articles/edit');
+
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchUnreadNotifications = async () => {
+      try {
+        const res = await request.get('/api/admin/community/interactions/overview');
+        const payload = res.data || res;
+
+        if (isMounted) {
+          setUnreadNotifications(payload?.unreadNotifications ?? 0);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setUnreadNotifications(0);
+        }
+      }
     };
 
-    const menuItems = [
-        { key: '/articles', icon: <FileTextOutlined />, label: '文章' },
-        { key: '/categories', icon: <FolderOpenOutlined />, label: '分类' },
-        { key: '/tags', icon: <TagsOutlined />, label: '标签' },
-        { key: '/comments', icon: <CommentOutlined />, label: '评论' },
-    ];
+    fetchUnreadNotifications();
 
-    const selectedKey = location.pathname.startsWith('/articles') && location.pathname !== '/articles'
-        ? '/articles'
-        : location.pathname;
+    return () => {
+      isMounted = false;
+    };
+  }, [location.pathname]);
 
-    const isEditorPage = location.pathname.includes('/articles/new') || location.pathname.includes('/articles/edit');
+  return (
+    <div className="admin-shell">
+      <div className="admin-shell__bg" />
 
-    return (
-        <Layout
-            className="min-h-screen bg-slate-50 dark:bg-[#030712]"
-            style={{
-                backgroundImage:
-                    'radial-gradient(1200px 420px at 50% -120px, rgba(99,102,241,0.18), transparent 70%), radial-gradient(900px 320px at 10% 20%, rgba(14,165,233,0.12), transparent 72%)',
-            }}
-        >
-            <Header className="sticky top-0 z-50 px-8 flex items-center justify-between h-16 bg-white/80 dark:bg-[#09090b]/80 backdrop-blur-md border-b border-slate-200 dark:border-[#27272a]">
-                <div className="flex items-center gap-8 h-full">
-                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-                        <div className="w-8 h-8 bg-slate-900 dark:bg-slate-100 rounded-lg flex items-center justify-center">
-                            <span className="text-white dark:text-slate-900 font-bold text-base">PX</span>
-                        </div>
-                        <span className="text-slate-900 dark:text-slate-100 text-base font-semibold tracking-tight">破星辰 CMS</span>
-                    </div>
-                    <Menu
-                        mode="horizontal"
-                        selectedKeys={[selectedKey]}
-                        onClick={({ key }) => navigate(key)}
-                        items={menuItems}
-                        className="bg-transparent border-b-0 leading-[62px] min-w-[400px]"
-                    />
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar__brand">
+          <button type="button" className="admin-sidebar__logo" onClick={() => navigate('/articles')}>
+            <span className="admin-sidebar__logo-text">PX</span>
+          </button>
+          <div>
+            <div className="admin-sidebar__title">破星辰只寻你</div>
+            <div className="admin-sidebar__subtitle">后台管理中心</div>
+          </div>
+        </div>
+
+        <nav className="admin-sidebar__nav">
+          <SidebarLink
+            to="/"
+            label="仪表盘"
+            icon={LayoutDashboard}
+            active={location.pathname === '/'}
+          />
+          {MENU_ITEMS.map((item) => {
+            const active = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+            return (
+              <SidebarLink
+                key={item.path}
+                to={item.path}
+                label={item.label}
+                icon={item.icon}
+                active={active}
+              />
+            );
+          })}
+        </nav>
+      </aside>
+
+      <div className="admin-main">
+        <header className="admin-header">
+          <div className="admin-search">
+            <Search size={18} className="admin-search__icon" />
+            <input type="text" placeholder="搜索..." className="admin-search__input" />
+          </div>
+
+          <div className="admin-header__actions">
+            <button className="admin-bell" type="button" aria-label="通知">
+              <Bell size={20} />
+              {unreadNotifications > 0 && <span className="admin-bell__dot" />}
+            </button>
+
+            <div className="admin-user">
+              <div className="admin-user__meta">
+                <div className="admin-user__name">Admin User</div>
+                <div className="admin-user__role">Super Administrator</div>
+              </div>
+              <Dropdown
+                menu={{
+                  items: [
+                    {
+                      key: 'logout',
+                      icon: <LogOut size={14} />,
+                      label: '退出登录',
+                      onClick: handleLogout,
+                    },
+                  ],
+                }}
+                placement="bottomRight"
+              >
+                <div className="admin-user__avatar-wrap">
+                  <Avatar
+                    size={44}
+                    src={adminAssetPath('assets/avatar.png')}
+                    className="admin-user__avatar"
+                  >
+                    AD
+                  </Avatar>
                 </div>
+              </Dropdown>
+            </div>
+          </div>
+        </header>
 
-                <div className="flex items-center gap-4">
-                    <Dropdown
-                        menu={{
-                            items: [
-                                {
-                                    key: 'logout',
-                                    icon: <LogoutOutlined />,
-                                    label: '退出登录',
-                                    onClick: handleLogout,
-                                },
-                            ],
-                        }}
-                        placement="bottomRight"
-                    >
-                        <div className="flex items-center gap-2 cursor-pointer p-1 rounded-full hover:bg-slate-100 dark:hover:bg-[#27272a]">
-                            <Avatar
-                                size={32}
-                                src={adminAssetPath('assets/avatar.png')}
-                                className="bg-slate-200 dark:bg-[#27272a] border border-slate-300 dark:border-[#3f3f46]"
-                            />
-                        </div>
-                    </Dropdown>
-                </div>
-            </Header>
-
-            <Content
-                className={
-                    isEditorPage
-                        ? 'w-full max-w-[1280px] mx-auto my-4 md:my-6 p-0 rounded-2xl border border-slate-200/45 dark:border-white/15 bg-white/72 dark:bg-slate-950/45 backdrop-blur-2xl shadow-[0_20px_80px_rgba(2,6,23,.55)] overflow-hidden'
-                        : 'w-full p-4 md:p-8 max-w-[1200px] mx-auto my-6 rounded-2xl border border-slate-200/50 dark:border-white/15 bg-white/78 dark:bg-slate-950/45 backdrop-blur-2xl shadow-[0_20px_80px_rgba(2,6,23,.55)]'
-                }
-            >
-                <Outlet />
-            </Content>
-        </Layout>
-    );
+        <main ref={contentRef} className={`admin-content ${isEditorPage ? 'admin-content--editor' : ''}`}>
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
 };
+
+function SidebarLink({ to, label, icon, active, onClick, standalone = true }) {
+  const className = `admin-nav-item${active ? ' admin-nav-item--active' : ''}`;
+  const IconComponent = icon;
+
+  if (!standalone && onClick) {
+    return (
+      <button type="button" className={className} onClick={onClick}>
+        <IconComponent size={18} />
+        <span>{label}</span>
+      </button>
+    );
+  }
+
+  return (
+    <Link to={to} className={className}>
+      <IconComponent size={18} />
+      <span>{label}</span>
+    </Link>
+  );
+}
 
 export default BasicLayout;

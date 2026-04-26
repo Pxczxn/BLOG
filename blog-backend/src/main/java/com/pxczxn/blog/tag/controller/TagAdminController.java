@@ -1,3 +1,8 @@
+/**
+ * 标签管理接口
+ * <p>
+ * 需要管理员权限，提供标签的创建和删除功能。
+ */
 package com.pxczxn.blog.tag.controller;
 
 import com.pxczxn.blog.common.response.Result;
@@ -18,16 +23,30 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class TagAdminController {
 
+    /** 标签服务 */
     private final TagService tagService;
 
+    /**
+     * 创建新标签
+     *
+     * @param request 标签创建请求
+     * @return 创建成功的标签
+     */
     @PostMapping
     public Result<Tag> create(@Valid @RequestBody TagCreateRequest request) {
         return Result.success(tagService.create(request));
     }
 
+    /**
+     * 根据ID删除标签
+     *
+     * @param id 标签ID
+     * @return 成功响应
+     */
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         tagService.delete(id);
         return Result.success(null);
     }
 }
+

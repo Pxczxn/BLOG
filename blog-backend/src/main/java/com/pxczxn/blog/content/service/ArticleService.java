@@ -1,3 +1,9 @@
+/**
+ * 文章服务
+ * <p>
+ * 处理文章的核心业务逻辑，包括文章的增删改查、发布/下架、
+ * 分类和标签关联管理、slug 自动生成等功能。
+ */
 package com.pxczxn.blog.content.service;
 
 import com.pxczxn.blog.category.entity.Category;
@@ -54,13 +60,21 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class ArticleService {
 
+    /** Slug 最大长度 */
     private static final int MAX_SLUG_LENGTH = 200;
+    /** Slug 生成重试最大次数 */
     private static final int MAX_SLUG_RETRY = 10;
+    /** Slug 冲突时随机后缀长度 */
     private static final int RANDOM_SUFFIX_LENGTH = 4;
+    /** 随机字符集 */
     private static final char[] RANDOM_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789".toCharArray();
+    /** 用于去除 Unicode 变音符号的正则 */
     private static final Pattern DIACRITICS = Pattern.compile("\\p{M}+");
+    /** 非法 Slug 字符（只允许小写字母、数字、空格、连字符） */
     private static final Pattern NON_SLUG_CHARS = Pattern.compile("[^a-z0-9\\s-]");
+    /** 多个连续空格 */
     private static final Pattern MULTI_WHITESPACE = Pattern.compile("\\s+");
+    /** 多个连续连字符 */
     private static final Pattern MULTI_HYPHEN = Pattern.compile("-+");
 
     private final ArticleRepository articleRepository;
@@ -70,6 +84,16 @@ public class ArticleService {
     private final TagRepository tagRepository;
     private final SecureRandom secureRandom = new SecureRandom();
 
+    /**
+     * 创建新文章
+     * <p>
+     * 根据标题自动生成唯一 slug，支持设置分类和标签。
+     * 若状态为已发布，则同时设置发布时间。
+     *
+     * @param request  文章创建请求
+     * @param authorId 作者ID
+     * @return 创建后的文章响应
+     */
     @Transactional
     public ArticleResponse create(ArticleCreateRequest request, Long authorId) {
         AdminUser author = adminUserRepository.findById(authorId)
@@ -105,6 +129,7 @@ public class ArticleService {
         return toArticleResponse(article);
     }
 
+    /** 根据ID获取文章详情（管理员端，含标签ID列表） */
     @Transactional(readOnly = true)
     public ArticleAdminDetailResponse getAdminDetail(Long id) {
         Article article = articleRepository.findById(id)
@@ -120,6 +145,11 @@ public class ArticleService {
         return toArticleResponse(article);
     }
 
+    /**
+     * 根据slug获取已发布文章详情（公开端）
+     * <p>
+     * 仅返回已发布状态的文章，同时加载分类名称和标签信息。
+     */
     @Transactional(readOnly = true)
     public PublicArticleDetailResponse getPublishedBySlug(String slug) {
         Article article = articleRepository.findBySlugAndStatus(slug, ArticleStatus.PUBLISHED)
@@ -154,6 +184,11 @@ public class ArticleService {
                 .toList();
     }
 
+    /**
+     * 管理端文章列表（分页）
+     * <p>
+     * 支持按状态和关键词筛选，按创建时间倒序排列。
+     */
     @Transactional(readOnly = true)
     public PageResponse<ArticleAdminListItemResponse> listAdmin(int page, int size, String status, String keyword) {
         int safePage = Math.max(page, 1);
@@ -604,7 +639,7 @@ public class ArticleService {
     }
 
     /**
-     * 根据 slug 获取文章导航信息
+     * 根据访问别名获取文章导航信息。
      */
     @Transactional(readOnly = true)
     public com.pxczxn.blog.content.dto.ArticleNavigationResponse.ArticleNavigationData getNavigation(String slug) {

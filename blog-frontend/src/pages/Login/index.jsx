@@ -1,15 +1,31 @@
+/**
+ * 登录页
+ * <p>
+ * 管理员登录入口
+ */
 import React, { useState } from 'react';
 import { Form, Input, Button, Card, App } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { setAdminToken } from '../../auth/storage';
 import request from '../../utils/request';
 
+/**
+ * 登录组件
+ * 管理员登录入口，验证账号密码并存储 Token
+ * @returns {JSX.Element} 登录页面
+ */
 const Login = () => {
     const { message } = App.useApp();
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
+    /**
+     * 处理登录表单提交
+     * 调用登录接口，成功后存储 Token 并跳转到目标页面
+     * @param {Object} values - 表单数据，包含 username 和 password
+     */
     const onFinish = async (values) => {
         setLoading(true);
         try {
@@ -21,7 +37,7 @@ const Login = () => {
                 return;
             }
 
-            localStorage.setItem('token', token);
+            setAdminToken(token);
             message.success('登录成功');
             navigate(location.state?.from?.pathname || '/');
         } catch (error) {

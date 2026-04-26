@@ -1,3 +1,6 @@
+/*
+ * 功能：项目入口和基础文件。
+ */
 package com.pxczxn.blog;
 
 import org.junit.jupiter.api.Test;
@@ -8,9 +11,10 @@ public class PasswordGenerator {
     @Test
     public void generatePassword() {
         PasswordEncoder encoder = new BCryptPasswordEncoder();
-        String rawPassword = "pxczxn";
+        String rawPassword = "Pxczxnpxczxn";
         String encodedPassword = encoder.encode(rawPassword);
         System.out.println("Raw password: " + rawPassword);
         System.out.println("Encoded password: " + encodedPassword);
     }
 }
+

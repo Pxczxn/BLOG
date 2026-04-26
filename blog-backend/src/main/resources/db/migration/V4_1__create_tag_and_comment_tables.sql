@@ -1,3 +1,4 @@
+-- 功能：数据库迁移脚本。
 CREATE TABLE IF NOT EXISTS tag (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
@@ -32,3 +33,4 @@ CREATE TABLE IF NOT EXISTS comment (
     INDEX idx_comment_article_status_created_at (article_id, status, created_at),
     INDEX idx_comment_status_created_at (status, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

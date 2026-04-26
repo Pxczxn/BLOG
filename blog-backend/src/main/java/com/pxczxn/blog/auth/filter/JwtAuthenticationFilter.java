@@ -1,6 +1,17 @@
+/**
+ * JWT 认证过滤器
+ * <p>
+ * 拦截所有需要认证的后台管理接口请求，从请求头或 Cookie 中提取 JWT 令牌并验证。
+ * 验证通过后将用户信息存入 Spring Security 上下文中供后续使用。
+ */
 package com.pxczxn.blog.auth.filter;
 
+import com.pxczxn.blog.auth.dto.TokenValidationResult;
 import com.pxczxn.blog.auth.service.JwtService;
+import com.pxczxn.blog.auth.util.RequestTokenResolver;
+import com.pxczxn.blog.config.RestAuthenticationEntryPoint;
+import com.pxczxn.blog.security.AuthenticatedUserPrincipal;
+import com.pxczxn.blog.security.AuthenticatedUserType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,59 +35,63 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
+    /**
+     * JWT 认证过滤核心逻辑
+     * <p>
+     * 从请求中提取并验证 JWT，验证成功后将用户信息存入 SecurityContext。
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String token = extractToken(request);
+        String token = RequestTokenResolver.resolve(request);
 
-        // 放行登录和 ping 接口
-        String path = request.getRequestURI();
-        if (path.equals("/api/admin/login") || path.equals("/api/admin/ping")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        if (token != null) {
+            TokenValidationResult validationResult = jwtService.validateToken(token);
+            if (validationResult.valid()) {
+                String userId = validationResult.claims().getSubject();
+                String username = validationResult.claims().get("username", String.class);
+                String role = validationResult.claims().get("role", String.class);
+                String authority = "ROLE_" + (role == null || role.isBlank() ? "USER" : role);
 
-        if (token != null && jwtService.isTokenValid(token)) {
-            String userId = jwtService.extractUserId(token);
-            String username = jwtService.extractUsername(token);
-            String role = jwtService.extractRole(token);
-            String authority = "ROLE_" + (role == null || role.isBlank() ? "USER" : role);
+                AuthenticatedUserPrincipal principal = new AuthenticatedUserPrincipal(
+                        Long.valueOf(userId),
+                        username,
+                        role == null ? "USER" : role,
+                        AuthenticatedUserType.ADMIN
+                );
 
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(
-                            userId,
-                            null,
-                            List.of(new SimpleGrantedAuthority(authority))
-                    );
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                                principal,
+                                null,
+                                List.of(new SimpleGrantedAuthority(authority))
+                        );
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
 
-            log.debug("JWT 认证成功: userId={}, username={}", userId, username);
-        } else if (token != null) {
-            log.warn("JWT 认证失败: token 无效或已过期");
+                log.debug("JWT 认证成功: userId={}, username={}", userId, username);
+            } else {
+                SecurityContextHolder.clearContext();
+                request.setAttribute(RestAuthenticationEntryPoint.AUTH_ERROR_ATTRIBUTE, validationResult.errorCode().name());
+                log.warn("JWT 认证失败: reason={}", validationResult.errorCode());
+            }
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private String extractToken(HttpServletRequest request) {
-        // 从 Cookie 获取 token
-        jakarta.servlet.http.Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (jakarta.servlet.http.Cookie cookie : cookies) {
-                if ("jwt".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-
-        // 从 Authorization header 获取 token
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
-        }
-
-        return null;
+    /**
+     * 判断是否跳过此过滤器
+     * <p>
+     * 登录接口和 ping 接口不需要 JWT 验证。
+     */
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return !path.startsWith("/api/admin/")
+                || "/api/admin/login".equals(path)
+                || "/api/admin/ping".equals(path);
     }
 }
+

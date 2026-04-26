@@ -1,0 +1,17 @@
+/*
+ * 功能：前端模块逻辑。
+ */
+import React from 'react';
+import { RouterProvider } from 'react-router-dom';
+import router from './router';
+
+function App() {
+  return (
+    <div className="font-sans antialiased min-h-screen">
+      <RouterProvider router={router} />
+    </div>
+  );
+}
+
+export default App;
+

@@ -1,3 +1,6 @@
+/*
+ * 功能：项目入口和基础文件。
+ */
 package com.pxczxn.blog;
 
 import org.junit.jupiter.api.Test;
@@ -27,9 +30,10 @@ class DatabaseConnectionTest {
                 assertEquals(1, rs.getInt(1), "Query result should be 1");
             }
 
-            System.out.println("✅ Database connection successful!");
+            System.out.println("鉁?Database connection successful!");
             System.out.println("   Database: " + connection.getMetaData().getDatabaseProductName());
             System.out.println("   Version: " + connection.getMetaData().getDatabaseProductVersion());
         }
     }
 }
+

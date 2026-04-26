@@ -1,8 +1,12 @@
+/*
+ * 功能：后台认证相关实现。
+ */
 package com.pxczxn.blog.auth.service;
 
 import com.pxczxn.blog.auth.dto.LoginRequest;
 import com.pxczxn.blog.auth.exception.LoginException;
 import com.pxczxn.blog.auth.repository.DeviceSessionRepository;
+import com.pxczxn.blog.common.response.ApiErrorCode;
 import com.pxczxn.blog.user.dto.AdminUserCreateRequest;
 import com.pxczxn.blog.user.repository.AdminUserRepository;
 import com.pxczxn.blog.user.service.AdminUserService;
@@ -141,7 +145,7 @@ class LoginServiceTest {
         loginRequest.setPassword("wrongpassword");
         LoginException exception = assertThrows(LoginException.class, () -> loginService.login(loginRequest, mockRequest));
 
-        assertEquals("INVALID_PASSWORD", exception.getErrorCode());
+        assertEquals(ApiErrorCode.AUTH_INVALID_CREDENTIALS, exception.getErrorCode());
 
         deviceSessionRepository.deleteAll();
         assertThrows(LoginException.class, () -> loginService.login(loginRequest, mockRequest));
@@ -162,7 +166,7 @@ class LoginServiceTest {
 
         LoginException exception = assertThrows(LoginException.class, () -> loginService.login(loginRequest, mockRequest));
 
-        assertEquals("USER_NOT_FOUND", exception.getErrorCode());
+        assertEquals(ApiErrorCode.AUTH_INVALID_CREDENTIALS, exception.getErrorCode());
     }
 
     @Test
@@ -178,11 +182,11 @@ class LoginServiceTest {
 
         for (int i = 0; i < 5; i++) {
             LoginException ex = assertThrows(LoginException.class, () -> loginService.login(loginRequest, mockRequest));
-            assertEquals("INVALID_PASSWORD", ex.getErrorCode());
+            assertEquals(ApiErrorCode.AUTH_INVALID_CREDENTIALS, ex.getErrorCode());
         }
 
         LoginException ex = assertThrows(LoginException.class, () -> loginService.login(loginRequest, mockRequest));
-        assertEquals("ACCOUNT_LOCKED", ex.getErrorCode());
+        assertEquals(ApiErrorCode.AUTH_ACCOUNT_LOCKED, ex.getErrorCode());
     }
 
     @Test
@@ -206,7 +210,7 @@ class LoginServiceTest {
 
         loginRequest.setPassword("wrongpassword");
         LoginException ex = assertThrows(LoginException.class, () -> loginService.login(loginRequest, mockRequest));
-        assertEquals("INVALID_PASSWORD", ex.getErrorCode());
+        assertEquals(ApiErrorCode.AUTH_INVALID_CREDENTIALS, ex.getErrorCode());
     }
 
     @Test
@@ -236,3 +240,4 @@ class LoginServiceTest {
         assertEquals(session1.get().getId(), session2.get().getId());
     }
 }
+

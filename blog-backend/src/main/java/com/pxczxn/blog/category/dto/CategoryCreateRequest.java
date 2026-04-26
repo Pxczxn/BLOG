@@ -1,3 +1,8 @@
+/**
+ * 分类创建请求 DTO
+ * <p>
+ * 包含分类名称，名称不能为空且最大长度100。
+ */
 package com.pxczxn.blog.category.dto;
 
 import jakarta.validation.constraints.NotBlank;
@@ -7,7 +12,11 @@ import lombok.Data;
 @Data
 public class CategoryCreateRequest {
 
-    @NotBlank(message = "name must not be blank")
-    @Size(max = 100, message = "name length must be <= 100")
+    /**
+     * 分类名称，不能为空，最大长度100
+     */
+    @NotBlank(message = "分类名称不能为空")
+    @Size(max = 100, message = "分类名称长度不能超过100")
     private String name;
 }
+

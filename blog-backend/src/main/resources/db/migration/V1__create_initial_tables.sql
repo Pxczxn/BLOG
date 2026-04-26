@@ -1,4 +1,4 @@
--- 创建用户表
+-- 功能：数据库迁移脚本。
 CREATE TABLE IF NOT EXISTS admin_user (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,

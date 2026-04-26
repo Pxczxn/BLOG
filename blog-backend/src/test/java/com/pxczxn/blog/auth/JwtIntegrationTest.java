@@ -1,3 +1,6 @@
+/*
+ * 功能：后台认证相关实现。
+ */
 package com.pxczxn.blog.auth;
 
 import com.pxczxn.blog.auth.dto.LoginRequest;
@@ -179,6 +182,29 @@ class JwtIntegrationTest {
     }
 
     @Test
+    void testKickedDeviceTokenBecomesInvalid() {
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        when(mockRequest.getHeader("User-Agent")).thenReturn("TestAgent");
+        when(mockRequest.getRemoteAddr()).thenReturn("127.0.0.1");
+
+        LoginRequest firstDevice = new LoginRequest();
+        firstDevice.setUsername(TEST_USERNAME);
+        firstDevice.setPassword(TEST_PASSWORD);
+        firstDevice.setDeviceId("device-001");
+        String oldToken = loginService.login(firstDevice, mockRequest).getToken();
+
+        for (int i = 2; i <= 4; i++) {
+            LoginRequest loginRequest = new LoginRequest();
+            loginRequest.setUsername(TEST_USERNAME);
+            loginRequest.setPassword(TEST_PASSWORD);
+            loginRequest.setDeviceId("device-" + String.format("%03d", i));
+            loginService.login(loginRequest, mockRequest);
+        }
+
+        assertFalse(jwtService.isTokenValid(oldToken));
+    }
+
+    @Test
     void testLogout_DeactivatesDeviceSession() {
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         when(mockRequest.getHeader("User-Agent")).thenReturn("TestAgent");
@@ -200,3 +226,4 @@ class JwtIntegrationTest {
         assertFalse(deviceSessionService.findActiveSession(userId, "device-001").isPresent());
     }
 }
+

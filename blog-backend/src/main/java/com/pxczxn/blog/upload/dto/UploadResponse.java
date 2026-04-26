@@ -1,3 +1,6 @@
+/**
+ * 文件上传响应 DTO
+ */
 package com.pxczxn.blog.upload.dto;
 
 import lombok.AllArgsConstructor;
@@ -12,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class UploadResponse {
 
     /**
-     * 文件访问URL
+     * 文件访问地址。
      */
     private String url;
 

@@ -24,7 +24,7 @@ cd blog-backend
 mvn clean spring-boot:run
 ```
 
-默认端口: `8080`
+默认端口: `4002`
 
 ### 2) 博客前台
 
@@ -34,6 +34,8 @@ npm install
 npm run dev
 ```
 
+默认端口: `4000`
+
 ### 3) 管理后台
 
 ```bash
@@ -41,6 +43,8 @@ cd blog-frontend
 npm install
 npm run dev
 ```
+
+默认端口: `4001`
 
 ## 生产部署约定
 

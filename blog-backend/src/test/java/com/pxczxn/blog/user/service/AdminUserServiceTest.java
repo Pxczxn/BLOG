@@ -1,3 +1,6 @@
+/*
+ * 功能：管理员用户相关实现。
+ */
 package com.pxczxn.blog.user.service;
 
 import com.pxczxn.blog.user.dto.AdminUserCreateRequest;
@@ -253,3 +256,4 @@ class AdminUserServiceTest {
         return request;
     }
 }
+

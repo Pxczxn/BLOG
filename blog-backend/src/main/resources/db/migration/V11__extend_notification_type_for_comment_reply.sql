@@ -1,0 +1,4 @@
+-- 功能：数据库迁移脚本。
+ALTER TABLE community_notification
+    MODIFY COLUMN type ENUM('POST_LIKED', 'POST_FAVORITED', 'USER_FOLLOWED', 'COMMENT_REPLIED', 'SYSTEM') NOT NULL;
+

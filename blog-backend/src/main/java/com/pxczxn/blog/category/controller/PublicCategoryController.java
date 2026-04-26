@@ -1,3 +1,8 @@
+/**
+ * 分类公开控制器
+ * <p>
+ * 提供分类列表查询接口，无需认证即可访问。
+ */
 package com.pxczxn.blog.category.controller;
 
 import com.pxczxn.blog.category.entity.Category;
@@ -17,8 +22,14 @@ public class PublicCategoryController {
 
     private final CategoryService categoryService;
 
+    /**
+     * 获取所有分类列表
+     *
+     * @return 按创建时间降序排列的分类列表
+     */
     @GetMapping
     public Result<List<Category>> list() {
         return Result.success(categoryService.list());
     }
 }
+

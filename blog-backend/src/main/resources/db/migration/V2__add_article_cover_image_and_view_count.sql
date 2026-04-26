@@ -1,4 +1,4 @@
--- 添加 cover_image 列
+-- 功能：数据库迁移脚本。
 ALTER TABLE article
     ADD COLUMN cover_image VARCHAR(500) NULL AFTER content;
 

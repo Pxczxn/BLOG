@@ -1,3 +1,8 @@
+/**
+ * 标签公开接口
+ * <p>
+ * 无需认证即可访问，提供标签列表查询功能。
+ */
 package com.pxczxn.blog.tag.controller;
 
 import com.pxczxn.blog.common.response.Result;
@@ -15,10 +20,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PublicTagController {
 
+    /** 标签服务 */
     private final TagService tagService;
 
+    /**
+     * 获取所有标签列表
+     *
+     * @return 标签列表
+     */
     @GetMapping
     public Result<List<Tag>> list() {
         return Result.success(tagService.list());
     }
 }
+

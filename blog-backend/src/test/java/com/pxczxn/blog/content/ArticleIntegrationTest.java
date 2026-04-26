@@ -1,3 +1,6 @@
+/*
+ * 功能：文章内容相关实现。
+ */
 package com.pxczxn.blog.content;
 
 import com.pxczxn.blog.common.response.PageResponse;
@@ -48,6 +51,7 @@ class ArticleIntegrationTest {
     }
 
     private void resetDatabase() {
+        executeIfPossible("CREATE TABLE IF NOT EXISTS article_tag (article_id BIGINT, tag_id BIGINT)");
         deleteIfExists("DELETE FROM article_tag");
         deleteIfExists("DELETE FROM comment");
         deleteIfExists("DELETE FROM article");
@@ -59,6 +63,13 @@ class ArticleIntegrationTest {
     private void deleteIfExists(String sql) {
         try {
             jdbcTemplate.update(sql);
+        } catch (DataAccessException ignored) {
+        }
+    }
+
+    private void executeIfPossible(String sql) {
+        try {
+            jdbcTemplate.execute(sql);
         } catch (DataAccessException ignored) {
         }
     }
@@ -130,3 +141,4 @@ class ArticleIntegrationTest {
         assertEquals(created.getSlug(), detail.slug());
     }
 }
+

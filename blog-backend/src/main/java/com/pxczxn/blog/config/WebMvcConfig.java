@@ -1,3 +1,8 @@
+/**
+ * Web MVC 配置
+ * <p>
+ * 配置静态资源映射和拦截器
+ */
 package com.pxczxn.blog.config;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -11,9 +16,18 @@ import java.nio.file.Paths;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
+    /** 文件上传目录路径 */
     @Value("${file.upload-dir:./upload}")
     private String uploadDir;
 
+    /**
+     * 添加静态资源处理器
+     * <p>
+     * 将 /uploads/** 路径映射到实际的文件上传目录，
+     * 用于提供上传文件的访问服务
+     *
+     * @param registry 资源处理器注册表
+     */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
@@ -25,3 +39,4 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addResourceLocations(location);
     }
 }
+

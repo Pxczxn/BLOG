@@ -1,4 +1,4 @@
--- 添加初始分类
+-- 功能：数据库迁移脚本。
 INSERT INTO category (name, slug, created_at, updated_at) VALUES
     ('技术开发', 'tech-dev', NOW(), NOW()),
     ('AI开发', 'ai-dev', NOW(), NOW()),

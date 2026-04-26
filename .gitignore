@@ -123,3 +123,4 @@ review-docs/
 **/*.md
 !README.md
 !**/README*.md
+!doc/**/*.md

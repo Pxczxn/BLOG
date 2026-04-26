@@ -1,3 +1,6 @@
+/**
+ * 标签创建请求 DTO
+ */
 package com.pxczxn.blog.tag.dto;
 
 import jakarta.validation.constraints.NotBlank;
@@ -7,7 +10,9 @@ import lombok.Data;
 @Data
 public class TagCreateRequest {
 
-    @NotBlank(message = "name must not be blank")
-    @Size(max = 100, message = "name length must be <= 100")
+    /** 标签名称 */
+    @NotBlank(message = "标签名称不能为空")
+    @Size(max = 100, message = "标签名称长度不能超过100")
     private String name;
 }
+
