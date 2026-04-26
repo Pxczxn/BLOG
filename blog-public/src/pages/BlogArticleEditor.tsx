@@ -9,13 +9,19 @@ import {
   Code2,
   Edit3,
   Eye,
+  Heading2,
+  Heading3,
   Heading1,
+  ImagePlus,
   Image as ImageIcon,
   Italic,
+  Link as LinkIcon,
   List,
   ListOrdered,
+  Minus,
   Quote,
   Send,
+  Upload,
 } from 'lucide-react';
 import request from '../lib/request';
 import { useAuth } from '../lib/AuthContext';
@@ -36,6 +42,7 @@ export default function BlogArticleEditor() {
   const { user, initializing } = useAuth();
   const navigate = useNavigate();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
 
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
@@ -47,6 +54,7 @@ export default function BlogArticleEditor() {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [previewMode, setPreviewMode] = useState<'write' | 'preview'>('write');
   const [loadingMeta, setLoadingMeta] = useState(true);
+  const [coverUploading, setCoverUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -121,6 +129,50 @@ export default function BlogArticleEditor() {
     updateContentWithSelection(nextValue, start + prefix.length, start + prefixed.length);
   };
 
+  const insertBlock = (block: string, cursorOffset = block.length) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const needsBeforeBreak = start > 0 && content[start - 1] !== '\n';
+    const needsAfterBreak = end < content.length && content[end] !== '\n';
+    const nextBlock = `${needsBeforeBreak ? '\n' : ''}${block}${needsAfterBreak ? '\n' : ''}`;
+    const nextValue = `${content.slice(0, start)}${nextBlock}${content.slice(end)}`;
+    const nextCursor = start + (needsBeforeBreak ? 1 : 0) + cursorOffset;
+
+    updateContentWithSelection(nextValue, nextCursor, nextCursor);
+  };
+
+  const handleCoverUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      setCoverUploading(true);
+      const res: any = await request.post('/api/community/upload/cover', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const url = res?.data?.url || res?.data || res?.url || res;
+      if (typeof url === 'string') {
+        setCoverImage(url);
+        toast.success('封面上传成功', { duration: 1500 });
+      } else {
+        toast.error('封面上传成功，但没有拿到图片地址', { duration: 1800 });
+      }
+    } catch (err: any) {
+      toast.error(err?.message || '封面上传失败', { duration: 1800 });
+    } finally {
+      setCoverUploading(false);
+      if (event.target) {
+        event.target.value = '';
+      }
+    }
+  };
+
   const toggleTag = (tagId: number) => {
     setSelectedTagIds((current) => {
       if (current.includes(tagId)) {
@@ -167,12 +219,18 @@ export default function BlogArticleEditor() {
 
   const toolbarItems = [
     { label: '一级标题', icon: Heading1, action: () => insertLinePrefix('# ', '一级标题') },
+    { label: '二级标题', icon: Heading2, action: () => insertLinePrefix('## ', '二级标题') },
+    { label: '三级标题', icon: Heading3, action: () => insertLinePrefix('### ', '三级标题') },
     { label: '加粗', icon: Bold, action: () => insertInline('**', '**', '加粗文字') },
     { label: '斜体', icon: Italic, action: () => insertInline('*', '*', '斜体文字') },
     { label: '无序列表', icon: List, action: () => insertLinePrefix('- ', '列表项') },
     { label: '有序列表', icon: ListOrdered, action: () => insertLinePrefix('1. ', '列表项') },
     { label: '引用', icon: Quote, action: () => insertLinePrefix('> ', '引用内容') },
     { label: '代码', icon: Code2, action: () => insertInline('`', '`', 'code') },
+    { label: '代码块', icon: Code2, action: () => insertBlock('```js\nconsole.log(\"hello\");\n```\n', 6) },
+    { label: '链接', icon: LinkIcon, action: () => insertInline('[', '](https://example.com)', '链接文字') },
+    { label: '图片', icon: ImagePlus, action: () => insertInline('![', '](https://example.com/image.png)', '图片描述') },
+    { label: '分割线', icon: Minus, action: () => insertBlock('---\n') },
   ];
 
   if (initializing) {
@@ -228,11 +286,11 @@ export default function BlogArticleEditor() {
             <select
               value={categoryId}
               onChange={(event) => setCategoryId(event.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300 outline-none transition focus:border-purple-400"
+              className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300 outline-none transition focus:border-purple-400 [&>option]:bg-slate-950 [&>option]:text-slate-100"
             >
-              <option value="">选择分类...</option>
+              <option value="" className="bg-slate-950 text-slate-100">选择分类...</option>
               {categories.map((category) => (
-                <option key={category.id} value={category.id}>
+                <option key={category.id} value={category.id} className="bg-slate-950 text-slate-100">
                   {category.name}
                 </option>
               ))}
@@ -240,16 +298,39 @@ export default function BlogArticleEditor() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-300">封面图 URL</label>
-            <div className="relative">
-              <ImageIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            <label className="mb-2 block text-sm font-medium text-slate-300">封面图</label>
+            <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+              <div className="relative">
+                <ImageIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+                <input
+                  value={coverImage}
+                  onChange={(event) => setCoverImage(event.target.value)}
+                  placeholder="可粘贴 URL，也可以右侧上传"
+                  className="w-full rounded-2xl border border-white/10 bg-black/20 py-3 pl-11 pr-4 text-sm text-slate-300 outline-none transition focus:border-purple-400"
+                />
+              </div>
+              <button
+                type="button"
+                disabled={coverUploading}
+                onClick={() => coverInputRef.current?.click()}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-purple-400/40 bg-purple-500/15 px-4 py-3 text-sm font-semibold text-purple-100 transition hover:bg-purple-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Upload className="h-4 w-4" />
+                {coverUploading ? '上传中' : '本地上传'}
+              </button>
               <input
-                value={coverImage}
-                onChange={(event) => setCoverImage(event.target.value)}
-                placeholder="https://..."
-                className="w-full rounded-2xl border border-white/10 bg-black/20 py-3 pl-11 pr-4 text-sm text-slate-300 outline-none transition focus:border-purple-400"
+                ref={coverInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                onChange={handleCoverUpload}
+                className="hidden"
               />
             </div>
+            {coverImage && (
+              <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+                <img src={coverImage} alt="封面预览" className="h-32 w-full object-cover" />
+              </div>
+            )}
           </div>
         </div>
 
