@@ -1,0 +1,40 @@
+
+
+
+
+
+package com.pxczxn.blog.community.interaction.controller;
+
+import com.pxczxn.blog.common.response.Result;
+import com.pxczxn.blog.community.interaction.dto.AdminInteractionOverviewResponse;
+import com.pxczxn.blog.community.interaction.service.CommunityInteractionService;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@Validated
+@RestController
+@RequestMapping("/api/admin/community/interactions")
+@RequiredArgsConstructor
+public class AdminCommunityInteractionController {
+
+    private final CommunityInteractionService communityInteractionService;
+
+    
+
+
+
+
+
+    @GetMapping("/overview")
+    public Result<AdminInteractionOverviewResponse> overview(
+            @RequestParam(defaultValue = "10") @Min(value = 1, message = "数量必须大于等于1") @Max(value = 50, message = "数量必须小于等于50") int topSize) {
+        return Result.success(communityInteractionService.getAdminOverview(topSize));
+    }
+}
+
