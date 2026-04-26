@@ -87,10 +87,13 @@ export default function ArticleManage() {
       <AdminPageHeader
         title="文章管理"
         actions={
-          <button className="flex cursor-not-allowed items-center gap-2 rounded-xl border-none bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2 text-sm font-medium text-white opacity-50 shadow-[0_0_15px_rgba(168,85,247,0.4)] transition-all hover:from-purple-500 hover:to-blue-500">
+          <Link
+            to="/admin-pxczxn/articles/new"
+            className="flex items-center gap-2 rounded-xl border-none bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-2 text-sm font-medium text-white shadow-[0_0_15px_rgba(168,85,247,0.4)] transition-all hover:from-purple-500 hover:to-blue-500"
+          >
             <Plus className="h-4 w-4" />
-            新增文章(待对接)
-          </button>
+            写文章
+          </Link>
         }
       />
 
