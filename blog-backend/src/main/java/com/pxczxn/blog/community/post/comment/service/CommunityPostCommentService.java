@@ -5,14 +5,18 @@
  */
 package com.pxczxn.blog.community.post.comment.service;
 
+import com.pxczxn.blog.comment.service.CommentService;
 import com.pxczxn.blog.community.entity.CommunityUser;
 import com.pxczxn.blog.community.entity.CommunityUserStatus;
 import com.pxczxn.blog.community.exception.CommunityAuthException;
 import com.pxczxn.blog.community.exception.CommunityUserNotFoundException;
+import com.pxczxn.blog.common.response.PageResponse;
 import com.pxczxn.blog.community.interaction.service.CommunityInteractionService;
 import com.pxczxn.blog.community.moderation.service.ModerationService;
+import com.pxczxn.blog.community.post.comment.dto.AdminCommunityPostCommentItemResponse;
 import com.pxczxn.blog.community.post.comment.dto.CommunityPostCommentCreateRequest;
 import com.pxczxn.blog.community.post.comment.dto.CommunityPostCommentItemResponse;
+import com.pxczxn.blog.community.post.comment.dto.CommunityPostCommentStatusResponse;
 import com.pxczxn.blog.community.post.comment.entity.CommunityPostComment;
 import com.pxczxn.blog.community.post.comment.entity.CommunityPostCommentStatus;
 import com.pxczxn.blog.community.post.comment.repository.CommunityPostCommentRepository;
@@ -22,6 +26,8 @@ import com.pxczxn.blog.community.post.exception.CommunityPostNotFoundException;
 import com.pxczxn.blog.community.post.repository.CommunityPostRepository;
 import com.pxczxn.blog.community.repository.CommunityUserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,6 +71,27 @@ public class CommunityPostCommentService {
                     );
                 })
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<AdminCommunityPostCommentItemResponse> listByStatus(CommunityPostCommentStatus status,
+                                                                            Pageable pageable,
+                                                                            int page) {
+        Page<CommunityPostComment> result = status == null
+                ? communityPostCommentRepository.findAll(pageable)
+                : communityPostCommentRepository.findByStatusOrderByCreatedAtDesc(status, pageable);
+        Map<Long, CommunityPost> posts = loadPosts(result.getContent().stream().map(CommunityPostComment::getPostId).toList());
+        List<AdminCommunityPostCommentItemResponse> items = result.getContent().stream()
+                .map(comment -> {
+                    CommunityPost post = posts.get(comment.getPostId());
+                    return AdminCommunityPostCommentItemResponse.from(
+                            comment,
+                            post != null ? post.getTitle() : null,
+                            post != null ? post.getSlug() : null
+                    );
+                })
+                .toList();
+        return new PageResponse<>(items, result.getTotalElements(), page, result.getSize());
     }
 
     @Transactional
@@ -124,6 +151,37 @@ public class CommunityPostCommentService {
         );
     }
 
+    @Transactional
+    public CommunityPostCommentStatusResponse approve(Long id) {
+        CommunityPostComment comment = communityPostCommentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Post comment not found"));
+        boolean shouldNotify = comment.getStatus() != CommunityPostCommentStatus.APPROVED;
+        comment.setStatus(CommunityPostCommentStatus.APPROVED);
+        CommunityPostComment saved = communityPostCommentRepository.save(comment);
+        moderationService.syncPostCommentTaskAfterAdminAction(saved.getId(), saved.getStatus(), null, null);
+        if (shouldNotify) {
+            moderationService.notifyApprovedPostComment(saved.getId());
+        }
+        return CommunityPostCommentStatusResponse.from(saved);
+    }
+
+    @Transactional
+    public CommunityPostCommentStatusResponse reject(Long id) {
+        CommunityPostComment comment = communityPostCommentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Post comment not found"));
+        comment.setStatus(CommunityPostCommentStatus.REJECTED);
+        CommunityPostComment saved = communityPostCommentRepository.save(comment);
+        moderationService.syncPostCommentTaskAfterAdminAction(saved.getId(), saved.getStatus(), null, null);
+        return CommunityPostCommentStatusResponse.from(saved);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        CommunityPostComment comment = communityPostCommentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Post comment not found"));
+        communityPostCommentRepository.delete(comment);
+    }
+
     private CommunityPost getPublishedPost(Long postId) {
         CommunityPost post = communityPostRepository.findById(postId)
                 .orElseThrow(() -> new CommunityPostNotFoundException(postId));
@@ -177,6 +235,16 @@ public class CommunityPostCommentService {
         }
         communityUserRepository.findAllById(ids).forEach(user -> users.put(user.getId(), user));
         return users;
+    }
+
+    private Map<Long, CommunityPost> loadPosts(List<Long> postIds) {
+        Map<Long, CommunityPost> posts = new HashMap<>();
+        Set<Long> ids = postIds.stream().filter(Objects::nonNull).collect(java.util.stream.Collectors.toSet());
+        if (ids.isEmpty()) {
+            return posts;
+        }
+        communityPostRepository.findAllById(ids).forEach(post -> posts.put(post.getId(), post));
+        return posts;
     }
 }
 

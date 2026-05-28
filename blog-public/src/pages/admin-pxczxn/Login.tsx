@@ -7,6 +7,7 @@ import { motion } from 'motion/react';
 import { Lock, User, Key, ArrowRight } from 'lucide-react';
 import request from '../../lib/request';
 import { setAdminToken } from '../../lib/auth';
+import Seo from '../../components/Seo';
 
 export default function AdminLogin() {
   const [username, setUsername] = useState('');
@@ -47,6 +48,7 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden font-sans selection:bg-purple-500/30">
+      <Seo title="后台登录" description="站点后台登录入口。" path="/admin-pxczxn/login" noindex />
       {/* 核心星空层 */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
          <div className="star-layer-1"></div>

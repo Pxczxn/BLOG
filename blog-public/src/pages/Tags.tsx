@@ -5,7 +5,9 @@
  */
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
+import Seo from '../components/Seo';
 import request from "../lib/request";
+import { buildBreadcrumbJsonLd, buildMetaDescription } from '../lib/siteSettings';
 
 export default function Tags() {
     const [tags, setTags] = useState<any[]>([]);
@@ -79,6 +81,15 @@ export default function Tags() {
 
     return (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <Seo
+                title="标签"
+                description={buildMetaDescription(`浏览 ${tags.length} 个标签维度下的文章内容。`)}
+                path="/tags"
+                jsonLd={buildBreadcrumbJsonLd([
+                    { name: '首页', path: '/' },
+                    { name: '标签', path: '/tags' },
+                ])}
+            />
             <div className="mb-12 text-center">
                 <motion.h1
                     initial={{ opacity: 0, y: 20 }}

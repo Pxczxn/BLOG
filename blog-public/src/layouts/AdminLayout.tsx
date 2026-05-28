@@ -11,15 +11,16 @@ import {
   Bell,
   ShieldAlert,
   Flag,
+  UserCircle
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import Seo from '../components/Seo';
 
 const MENU_ITEMS = [
   { icon: LayoutDashboard, label: '仪表盘', path: '/admin-pxczxn' },
   { icon: FileText, label: '文章管理', path: '/admin-pxczxn/articles' },
   { icon: FolderTree, label: '分类管理', path: '/admin-pxczxn/categories' },
   { icon: Tags, label: '标签管理', path: '/admin-pxczxn/tags' },
-  { icon: MessageSquare, label: '评论管理', path: '/admin-pxczxn/comments' },
   { icon: Users, label: '社区帖子', path: '/admin-pxczxn/community' },
   { icon: ShieldAlert, label: '审核任务', path: '/admin-pxczxn/moderation' },
   { icon: Flag, label: '举报处理', path: '/admin-pxczxn/reports' },
@@ -30,12 +31,13 @@ export default function AdminLayout() {
   const location = useLocation();
 
   return (
-    <div className="flex min-h-screen overflow-hidden bg-[#030014] font-sans text-slate-200 selection:bg-purple-500/30">
+    <div className="flex h-screen max-h-screen overflow-hidden bg-[#030014] font-sans text-slate-200 selection:bg-purple-500/30">
+      <Seo title="管理后台" description="站点后台管理界面" noindex />
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute top-[-10%] left-[-10%] h-[120%] w-[120%] bg-[radial-gradient(circle_at_50%_50%,rgba(76,29,149,0.08),transparent_50%)]" />
       </div>
 
-      <aside className="relative z-20 flex h-screen w-64 shrink-0 flex-col border-r border-white/10 bg-slate-950/85">
+      <aside className="relative z-20 flex h-full w-64 shrink-0 flex-col overflow-hidden border-r border-white/10 bg-slate-950/85">
         <div className="flex h-16 items-center border-b border-white/10 px-6">
           <div className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-xl font-bold text-transparent">
             DevBlog Admin
@@ -69,7 +71,7 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      <div className="relative z-10 flex w-full flex-1 flex-col overflow-hidden">
+      <div className="relative z-10 flex min-h-0 w-full flex-1 flex-col overflow-hidden">
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/10 bg-slate-950/85 px-8">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
@@ -100,7 +102,7 @@ export default function AdminLayout() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="min-h-0 flex-1 overflow-y-auto p-8">
           <div>
             <Outlet />
           </div>

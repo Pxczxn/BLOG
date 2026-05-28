@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { MessageSquare, Users, ThumbsUp, Eye } from 'lucide-react';
+import Seo from '../components/Seo';
 import request, { getStaticUrl } from '../lib/request';
 import RoleBadge from '../components/RoleBadge';
 import EmptyState from '../components/EmptyState';
 import { useAuth } from '../lib/AuthContext';
+import { buildBreadcrumbJsonLd, buildMetaDescription } from '../lib/siteSettings';
 
 type CommunityNode = {
   id: number;
@@ -40,6 +42,9 @@ export default function Community() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const publishPath = user ? '/community/new' : '/login?redirect=/community/new';
+  const selectedNodeName = selectedNode === 'all'
+    ? '全部节点'
+    : nodes.find((node) => node.slug === selectedNode)?.name || '社区帖子';
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -111,6 +116,17 @@ export default function Community() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <Seo
+        title={selectedNode === 'all' ? '社区' : `${selectedNodeName}社区`}
+        description={buildMetaDescription(
+          selectedNode === 'all' ? '浏览社区帖子、问题讨论和项目交流。' : `浏览 ${selectedNodeName} 节点下的社区讨论与帖子。`,
+        )}
+        path="/community"
+        jsonLd={buildBreadcrumbJsonLd([
+          { name: '首页', path: '/' },
+          { name: '社区', path: '/community' },
+        ])}
+      />
       <div className="mb-8 flex items-center justify-between gap-4">
         <div>
           <motion.h1

@@ -6,6 +6,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { User, Key, Mail, ArrowRight } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
+import Seo from '../components/Seo';
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -40,6 +41,7 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-[#030014] flex items-center justify-center relative overflow-hidden font-sans pt-16">
+      <Seo title="注册" description="创建社区账号以参与讨论、发帖和互动。" path="/register" noindex />
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute top-[-20%] right-[-10%] w-[120%] h-[120%] bg-[radial-gradient(circle_at_50%_50%,rgba(14,165,233,0.1),transparent_50%)]"></div>
       </div>

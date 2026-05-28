@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -135,9 +136,12 @@ public class CommentService {
      */
     @Transactional(readOnly = true)
     public PageResponse<AdminCommentItemResponse> listByStatus(CommentStatus status, Pageable pageable, int page) {
-        Page<Comment> result = commentRepository.findByStatusOrderByCreatedAtDesc(status, pageable);
+        Page<Comment> result = status == null
+                ? commentRepository.findAll(pageable)
+                : commentRepository.findByStatusOrderByCreatedAtDesc(status, pageable);
+        Map<Long, String> articleTitles = loadArticleTitles(result.getContent());
         List<AdminCommentItemResponse> items = result.getContent().stream()
-                .map(AdminCommentItemResponse::from)
+                .map(comment -> AdminCommentItemResponse.from(comment, articleTitles.get(comment.getArticleId())))
                 .toList();
         return new PageResponse<>(items, result.getTotalElements(), page, result.getSize());
     }
@@ -240,6 +244,20 @@ public class CommentService {
         communityUserRepository.findAllById(userIds)
                 .forEach(user -> users.put(user.getId(), user));
         return users;
+    }
+
+    private Map<Long, String> loadArticleTitles(List<Comment> comments) {
+        Set<Long> articleIds = comments.stream()
+                .map(Comment::getArticleId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, String> titles = new HashMap<>();
+        if (articleIds.isEmpty()) {
+            return titles;
+        }
+        articleRepository.findAllById(articleIds)
+                .forEach(article -> titles.put(article.getId(), article.getTitle()));
+        return titles;
     }
 }
 

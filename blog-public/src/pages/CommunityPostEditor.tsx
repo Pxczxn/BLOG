@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import request from '../lib/request';
 import { useAuth } from '../lib/AuthContext';
+import Seo from '../components/Seo';
 
 type CommunityNode = {
   id: number;
@@ -268,6 +269,7 @@ export default function CommunityPostEditor() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
+      <Seo title="发布帖子" description="创建新的社区帖子。" path="/community/new" noindex />
       <Link
         to="/community"
         className="mb-8 inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-white"

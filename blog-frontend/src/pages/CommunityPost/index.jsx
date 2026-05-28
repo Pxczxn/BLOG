@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { App, Button, Empty, Popconfirm, Select, Space, Table, Tag } from 'antd';
 import { DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { MessageSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import request from '../../utils/request';
 
 const statusColors = {
@@ -21,6 +23,7 @@ const statusLabels = {
 
 const CommunityPostPage = () => {
   const { message } = App.useApp();
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
@@ -141,14 +144,25 @@ const CommunityPostPage = () => {
           <h1 className="admin-page__title">社区帖子管理</h1>
           <p className="admin-page__desc">管理社区帖子生命周期和可见性。</p>
         </div>
-        <Select
-          allowClear
-          placeholder="按状态筛选"
-          value={statusFilter || undefined}
-          onChange={(value) => setStatusFilter(value || '')}
-          style={{ width: 220 }}
-          options={Object.keys(statusColors).map((key) => ({ value: key, label: statusLabels[key] }))}
-        />
+        <div className="admin-page__actions">
+          <Select
+            allowClear
+            placeholder="按状态筛选"
+            value={statusFilter || undefined}
+            onChange={(value) => setStatusFilter(value || '')}
+            style={{ width: 220 }}
+            options={Object.keys(statusColors).map((key) => ({ value: key, label: statusLabels[key] }))}
+          />
+          <Button
+            type="default"
+            size="large"
+            onClick={() => navigate('/community-posts/comments')}
+            className="admin-secondary-btn"
+          >
+            <MessageSquare size={18} style={{ marginRight: 8 }} />
+            评论管理
+          </Button>
+        </div>
       </div>
 
       <div className="admin-panel">

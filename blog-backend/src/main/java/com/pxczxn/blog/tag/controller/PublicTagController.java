@@ -6,7 +6,7 @@
 package com.pxczxn.blog.tag.controller;
 
 import com.pxczxn.blog.common.response.Result;
-import com.pxczxn.blog.tag.entity.Tag;
+import com.pxczxn.blog.tag.dto.TagPublicResponse;
 import com.pxczxn.blog.tag.service.TagService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +29,7 @@ public class PublicTagController {
      * @return 标签列表
      */
     @GetMapping
-    public Result<List<Tag>> list() {
+    public Result<List<TagPublicResponse>> list() {
         return Result.success(tagService.list());
     }
 }

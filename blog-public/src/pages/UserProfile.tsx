@@ -9,6 +9,7 @@ import { User, Mail, Link as LinkIcon, Edit3, LogOut, Bell, FileText, Camera } f
 import { useAuth } from '../lib/AuthContext';
 import request, { getStaticUrl } from '../lib/request';
 import RoleBadge from '../components/RoleBadge';
+import Seo from '../components/Seo';
 
 export default function UserProfile() {
   const { user, initializing, refreshUser, logout } = useAuth();
@@ -106,6 +107,7 @@ export default function UserProfile() {
   if (initializing) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Seo title="个人中心" description="社区用户个人中心。" path="/me" noindex />
         <div className="min-h-[40vh] flex items-center justify-center text-slate-400">
           正在同步你的账号信息...
         </div>
@@ -117,6 +119,7 @@ export default function UserProfile() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <Seo title="个人中心" description="管理个人资料、头像和通知消息。" path="/me" noindex />
       <div className="flex flex-col md:flex-row gap-8">
         
         {/* 侧边栏 */}

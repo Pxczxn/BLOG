@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import request from '../lib/request';
 import { useAuth } from '../lib/AuthContext';
+import Seo from '../components/Seo';
 
 type CategoryOption = {
   id: number;
@@ -283,6 +284,7 @@ export default function BlogArticleEditor() {
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
+      <Seo title="写文章" description="创建新的博客文章。" path="/blog/new" noindex />
       <Link
         to="/blog"
         className="mb-8 inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-white"

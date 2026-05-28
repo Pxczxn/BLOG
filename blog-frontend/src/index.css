@@ -19,6 +19,11 @@ body,
   scrollbar-gutter: stable;
 }
 
+option, optgroup {
+  background-color: #09090b;
+  color: #fafafa;
+}
+
 #root {
   max-width: none;
 }
@@ -345,9 +350,9 @@ body,
   flex: 1;
   min-height: 0;
   padding: 28px;
+  overflow-y: auto;
   overflow-x: hidden;
-  overflow-y: scroll;
-  scrollbar-gutter: stable both-edges;
+  scrollbar-gutter: stable;
 }
 
 .admin-content--editor {

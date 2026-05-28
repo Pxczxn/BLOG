@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
 import { AuthProvider } from './lib/AuthContext';
@@ -29,8 +29,9 @@ const ArticleManage = lazy(() => import('./pages/admin-pxczxn/ArticleManage'));
 const ArticleEditor = lazy(() => import('./pages/admin-pxczxn/ArticleEditor'));
 const CategoryManage = lazy(() => import('./pages/admin-pxczxn/CategoryManage'));
 const TagManage = lazy(() => import('./pages/admin-pxczxn/TagManage'));
-const CommentManage = lazy(() => import('./pages/admin-pxczxn/CommentManage'));
 const CommunityManage = lazy(() => import('./pages/admin-pxczxn/CommunityManage'));
+const ArticleCommentManage = lazy(() => import('./pages/admin-pxczxn/ArticleCommentManage.tsx')); // Force Vite reload
+const CommunityCommentManage = lazy(() => import('./pages/admin-pxczxn/CommunityCommentManage.tsx')); // Force Vite reload
 const ModerationManage = lazy(() => import('./pages/admin-pxczxn/ModerationManage'));
 const ReportManage = lazy(() => import('./pages/admin-pxczxn/ReportManage'));
 const SettingsManage = lazy(() => import('./pages/admin-pxczxn/SettingsManage'));
@@ -103,13 +104,15 @@ export default function App() {
                 <Route path="articles" element={<ArticleManage />} />
                 <Route path="articles/new" element={<ArticleEditor />} />
                 <Route path="articles/edit/:id" element={<ArticleEditor />} />
+                <Route path="articles/comments" element={<ArticleCommentManage />} />
                 <Route path="categories" element={<CategoryManage />} />
                 <Route path="tags" element={<TagManage />} />
-                <Route path="comments" element={<CommentManage />} />
                 <Route path="community" element={<CommunityManage />} />
+                <Route path="community/comments" element={<CommunityCommentManage />} />
                 <Route path="moderation" element={<ModerationManage />} />
                 <Route path="reports" element={<ReportManage />} />
                 <Route path="settings" element={<SettingsManage />} />
+                <Route path="comments" element={<Navigate to="/admin-pxczxn/articles/comments" replace />} />
               </Route>
             </Route>
           </Routes>

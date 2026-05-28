@@ -20,6 +20,11 @@
     background-attachment: fixed;
     overflow-x: hidden;
   }
+
+  option, optgroup {
+    background-color: #020617;
+    color: #cbd5e1;
+  }
 }
 
 

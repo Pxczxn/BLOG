@@ -58,6 +58,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -790,7 +791,7 @@ public class ModerationService {
      */
     private boolean scanAndStoreRuleHits(ModerationTask task, String sourceText) {
         String scanText = sourceText == null ? "" : sourceText;
-        String normalizedText = scanText.toLowerCase(Locale.ROOT);
+        String normalizedText = normalizeModerationText(scanText);
         List<ModerationKeywordRule> rules = moderationKeywordRuleRepository.findAllByEnabledTrue();
 
         List<ModerationRuleHit> hits = new ArrayList<>();
@@ -864,6 +865,20 @@ public class ModerationService {
             builder.append('\n');
         }
         builder.append(trimmed);
+    }
+
+    /**
+     * 统一审核文本格式，减少大小写、全角字符和零宽字符带来的漏检
+     */
+    private String normalizeModerationText(String value) {
+        if (value == null) {
+            return "";
+        }
+        String normalized = Normalizer.normalize(value, Normalizer.Form.NFKC);
+        return normalized
+                .replace("\u200B", "")
+                .replace("\uFEFF", "")
+                .toLowerCase(Locale.ROOT);
     }
 
     /**

@@ -4,8 +4,10 @@ import { motion } from 'motion/react';
 import { FileText, Filter, SquarePen, X } from 'lucide-react';
 import ArticleCard, { type Article } from '../components/ArticleCard';
 import EmptyState from '../components/EmptyState';
+import Seo from '../components/Seo';
 import request, { getStaticUrl } from '../lib/request';
 import { useAuth } from '../lib/AuthContext';
+import { buildBreadcrumbJsonLd, buildMetaDescription, readSiteSettings } from '../lib/siteSettings';
 
 type CategoryOption = {
   id?: number | string;
@@ -33,6 +35,7 @@ export default function Blog() {
   const [metaLoading, setMetaLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const siteSettings = readSiteSettings();
 
   const selectedCategoryLabel = useMemo(() => {
     if (selectedCategory === 'all') return '全部分类';
@@ -156,9 +159,42 @@ export default function Blog() {
 
   const hasActiveFilters = selectedCategory !== 'all' || selectedTag !== 'all';
   const writeArticlePath = user ? '/blog/new' : '/login?redirect=/blog/new';
+  const seoTitle = useMemo(() => {
+    if (selectedCategory !== 'all' && selectedTag !== 'all') {
+      return `${selectedCategoryLabel} / ${selectedTagLabel}`;
+    }
+    if (selectedCategory !== 'all') {
+      return `${selectedCategoryLabel}文章`;
+    }
+    if (selectedTag !== 'all') {
+      return `${selectedTagLabel}标签文章`;
+    }
+    return '博客';
+  }, [selectedCategory, selectedCategoryLabel, selectedTag, selectedTagLabel]);
+  const seoDescription = useMemo(() => {
+    const prefix = hasActiveFilters
+      ? `浏览 ${selectedCategoryLabel} 与 ${selectedTagLabel} 下的文章归档。`
+      : '浏览博客文章、项目复盘与工程实践记录。';
+    return buildMetaDescription(prefix, siteSettings.description);
+  }, [hasActiveFilters, selectedCategoryLabel, selectedTagLabel, siteSettings.description]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <Seo
+        title={seoTitle}
+        description={seoDescription}
+        path="/blog"
+        keywords={[
+          '博客',
+          selectedCategory !== 'all' ? selectedCategoryLabel : '',
+          selectedTag !== 'all' ? selectedTagLabel : '',
+          '技术文章',
+        ]}
+        jsonLd={buildBreadcrumbJsonLd([
+          { name: '首页', path: '/' },
+          { name: '博客', path: '/blog' },
+        ])}
+      />
       <section className="relative z-10 mb-6 overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 px-6 py-7 text-center backdrop-blur-xl">
         <p className="mb-2 text-xs uppercase tracking-[0.32em] text-purple-400/80">Blog</p>
         <h1 className="text-3xl font-black text-white drop-shadow-[0_0_18px_rgba(168,85,247,0.35)] md:text-4xl">

@@ -11,7 +11,7 @@ const formatDate = (time) => {
   ).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
 
-const Comment = () => {
+const ArticleComment = () => {
   const { message } = App.useApp();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -175,7 +175,7 @@ const Comment = () => {
     <div className="admin-page admin-page--table">
       <div className="admin-page__header">
         <div>
-          <h1 className="admin-page__title">评论管理</h1>
+          <h1 className="admin-page__title">文章评论管理</h1>
           <p className="admin-page__desc">集中审核待处理评论，保持内容区干净有序。</p>
         </div>
 
@@ -233,4 +233,4 @@ const Comment = () => {
   );
 };
 
-export default Comment;
+export default ArticleComment;

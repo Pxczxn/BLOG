@@ -6,7 +6,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Folder } from "lucide-react";
+import Seo from '../components/Seo';
 import request from "../lib/request";
+import { buildBreadcrumbJsonLd, buildMetaDescription } from '../lib/siteSettings';
 
 export default function Category() {
     const [categories, setCategories] = useState<any[]>([]);
@@ -55,6 +57,15 @@ export default function Category() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <Seo
+                title="分类"
+                description={buildMetaDescription(`浏览 ${categories.length} 个文章分类与归档。`)}
+                path="/category"
+                jsonLd={buildBreadcrumbJsonLd([
+                    { name: '首页', path: '/' },
+                    { name: '分类', path: '/category' },
+                ])}
+            />
             <div className="mb-12 text-center">
                 <motion.h1
                     initial={{ opacity: 0, y: 20 }}

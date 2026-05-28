@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Checkbox, Space, Tag, App, Popconfirm, Empty } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { DeleteOutlined, EditOutlined, SendOutlined, UndoOutlined } from '@ant-design/icons';
-import { CheckSquare, X } from 'lucide-react';
+import { CheckSquare, X, MessageSquare } from 'lucide-react';
 import { NotebookPen } from 'lucide-react';
 import request from '../../utils/request';
 
@@ -239,6 +239,16 @@ const ArticleList = () => {
           >
             {batchMode ? <X size={18} style={{ marginRight: 8 }} /> : <CheckSquare size={18} style={{ marginRight: 8 }} />}
             {batchMode ? '退出批量管理' : '批量管理文章'}
+          </Button>
+
+          <Button
+            type="default"
+            size="large"
+            onClick={() => navigate('/articles/comments')}
+            className="admin-secondary-btn"
+          >
+            <MessageSquare size={18} style={{ marginRight: 8 }} />
+            评论管理
           </Button>
         </div>
       </div>

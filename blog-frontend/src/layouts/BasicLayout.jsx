@@ -22,7 +22,6 @@ const MENU_ITEMS = [
   { path: '/articles', icon: FileText, label: '文章管理' },
   { path: '/categories', icon: FolderTree, label: '分类管理' },
   { path: '/tags', icon: Tags, label: '标签管理' },
-  { path: '/comments', icon: MessageSquare, label: '评论管理' },
   { path: '/community-posts', icon: MessageSquare, label: '社区帖子' },
   { path: '/community-interactions', icon: Flame, label: '互动数据' },
   { path: '/moderation-tasks', icon: ShieldAlert, label: '审核任务' },

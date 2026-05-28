@@ -10,7 +10,8 @@ import Dashboard from '../pages/Dashboard';
 import ArticleList from '../pages/Article/List';
 import ArticleEdit from '../pages/Article/Edit';
 import Category from '../pages/Category';
-import Comment from '../pages/Comment';
+import ArticleComment from '../pages/ArticleComment';
+import CommunityPostComment from '../pages/CommunityPostComment';
 import CommunityInteraction from '../pages/CommunityInteraction';
 import CommunityPost from '../pages/CommunityPost';
 import ContentReport from '../pages/ContentReport';
@@ -42,10 +43,12 @@ const router = createBrowserRouter(
                         { path: 'articles', element: <ArticleList /> },
                         { path: 'articles/new', element: <ArticleEdit /> },
                         { path: 'articles/edit/:id', element: <ArticleEdit /> },
+                        { path: 'articles/comments', element: <ArticleComment /> },
                         { path: 'categories', element: <Category /> },
                         { path: 'tags', element: <Tag /> },
-                        { path: 'comments', element: <Comment /> },
+                        { path: 'comments', element: <Navigate to="/articles/comments" replace /> },
                         { path: 'community-posts', element: <CommunityPost /> },
+                        { path: 'community-posts/comments', element: <CommunityPostComment /> },
                         { path: 'community-interactions', element: <CommunityInteraction /> },
                         { path: 'moderation-tasks', element: <ModerationTask /> },
                         { path: 'content-reports', element: <ContentReport /> },

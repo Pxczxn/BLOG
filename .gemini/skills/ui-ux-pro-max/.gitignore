@@ -1,0 +1,45 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Generated design system output
+design-system/
+exports/
+stage/
+
+# Local OS junk
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Optional local tooling
+.venv/
+venv/
+env/
+
+# Common build outputs
+dist/
+build/
+target/
+out/
+
+# Dependencies
+node_modules/
+.pnpm-store/
+.npm/
+.yarn/
+
+# Logs and temp files
+*.log
+tmp/
+temp/
+.cache/
+.eslintcache
+coverage/
+*.tmp
+*.swp
+
+# Environment files
+.env
+.env.*

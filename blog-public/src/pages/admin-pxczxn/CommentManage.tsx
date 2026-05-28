@@ -12,7 +12,7 @@ import AdminPageHeader from '../../components/admin/AdminPageHeader';
 export default function CommentManage() {
   const [comments, setComments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState('PENDING'); // PENDING, APPROVED, REJECTED
+  const [status, setStatus] = useState(''); // PENDING, APPROVED, REJECTED, empty = all
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
 

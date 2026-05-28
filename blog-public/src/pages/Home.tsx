@@ -5,12 +5,15 @@ import { FileText } from 'lucide-react';
 import ArticleCard, { type Article } from '../components/ArticleCard';
 import Sidebar from '../components/Sidebar';
 import EmptyState from '../components/EmptyState';
+import Seo from '../components/Seo';
 import request, { getStaticUrl } from '../lib/request';
+import { buildBreadcrumbJsonLd, buildMetaDescription, readSiteSettings, toAbsoluteUrl } from '../lib/siteSettings';
 
 export default function Home() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const siteSettings = readSiteSettings();
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -65,6 +68,29 @@ export default function Home() {
 
   return (
     <div className="mx-auto max-w-7xl py-8">
+      <Seo
+        description={buildMetaDescription(siteSettings.siteSub, siteSettings.description)}
+        path="/"
+        image="/assets/avatar.png"
+        jsonLd={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: siteSettings.siteName,
+            description: buildMetaDescription(siteSettings.siteSub, siteSettings.description),
+            url: toAbsoluteUrl('/'),
+            inLanguage: 'zh-CN',
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: siteSettings.siteName,
+            url: toAbsoluteUrl('/'),
+            logo: toAbsoluteUrl('/favicon.ico'),
+          },
+          buildBreadcrumbJsonLd([{ name: '首页', path: '/' }]),
+        ]}
+      />
       <section className="relative z-10 px-4 py-10 text-center sm:px-8 lg:px-12">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}

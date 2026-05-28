@@ -1,16 +1,11 @@
-/**
- * 评论管理控制器（管理员端）
- * <p>
- * 提供评论的审核（通过/拒绝）、删除、按状态分页查询等接口。
- */
-package com.pxczxn.blog.comment.controller;
+package com.pxczxn.blog.community.post.comment.controller;
 
-import com.pxczxn.blog.comment.dto.AdminCommentItemResponse;
-import com.pxczxn.blog.comment.dto.AdminCommentStatusResponse;
-import com.pxczxn.blog.comment.entity.CommentStatus;
-import com.pxczxn.blog.comment.service.CommentService;
 import com.pxczxn.blog.common.response.PageResponse;
 import com.pxczxn.blog.common.response.Result;
+import com.pxczxn.blog.community.post.comment.dto.AdminCommunityPostCommentItemResponse;
+import com.pxczxn.blog.community.post.comment.dto.CommunityPostCommentStatusResponse;
+import com.pxczxn.blog.community.post.comment.entity.CommunityPostCommentStatus;
+import com.pxczxn.blog.community.post.comment.service.CommunityPostCommentService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -27,53 +22,36 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Validated
 @RestController
-@RequestMapping("/api/admin/comments")
+@RequestMapping("/api/admin/community/comments")
 @RequiredArgsConstructor
-public class AdminCommentController {
+public class AdminCommunityPostCommentController {
 
-    private final CommentService commentService;
+    private final CommunityPostCommentService communityPostCommentService;
 
-    /**
-     * 按状态分页查询评论列表。
-     *
-     * @param status 审核状态；不传则返回全部
-     * @param page   页码，从1开始
-     * @param size   每页数量
-     * @return 分页评论列表
-     */
     @GetMapping
-    public Result<PageResponse<AdminCommentItemResponse>> list(
-            @RequestParam(required = false) CommentStatus status,
+    public Result<PageResponse<AdminCommunityPostCommentItemResponse>> list(
+            @RequestParam(required = false) CommunityPostCommentStatus status,
             @RequestParam(defaultValue = "1") @Min(value = 1, message = "页码必须大于等于1") int page,
             @RequestParam(defaultValue = "10") @Min(value = 1, message = "每页数量必须大于等于1") @Max(value = 100, message = "每页数量必须小于等于100") int size) {
 
         int p = Math.max(page - 1, 0);
         PageRequest pageable = PageRequest.of(p, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return Result.success(commentService.listByStatus(status, pageable, page));
+        return Result.success(communityPostCommentService.listByStatus(status, pageable, page));
     }
 
-    /**
-     * 审核通过评论。
-     */
     @PutMapping("/{id}/approve")
-    public Result<AdminCommentStatusResponse> approve(@PathVariable Long id) {
-        return Result.success(commentService.approve(id));
+    public Result<CommunityPostCommentStatusResponse> approve(@PathVariable Long id) {
+        return Result.success(communityPostCommentService.approve(id));
     }
 
-    /**
-     * 拒绝评论。
-     */
     @PutMapping("/{id}/reject")
-    public Result<AdminCommentStatusResponse> reject(@PathVariable Long id) {
-        return Result.success(commentService.reject(id));
+    public Result<CommunityPostCommentStatusResponse> reject(@PathVariable Long id) {
+        return Result.success(communityPostCommentService.reject(id));
     }
 
-    /**
-     * 删除评论。
-     */
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
-        commentService.delete(id);
+        communityPostCommentService.delete(id);
         return Result.success(null);
     }
 }

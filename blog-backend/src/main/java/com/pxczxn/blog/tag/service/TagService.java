@@ -8,17 +8,21 @@ package com.pxczxn.blog.tag.service;
 import com.pxczxn.blog.content.repository.ArticleTagQueryRepository;
 import com.pxczxn.blog.community.post.repository.CommunityPostTagQueryRepository;
 import com.pxczxn.blog.tag.dto.TagCreateRequest;
+import com.pxczxn.blog.tag.dto.TagPublicResponse;
 import com.pxczxn.blog.tag.entity.Tag;
 import com.pxczxn.blog.tag.exception.TagNotFoundException;
 import com.pxczxn.blog.tag.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.text.Normalizer;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 @Service
@@ -44,6 +48,7 @@ public class TagService {
 
     /** 标签数据访问 */
     private final TagRepository tagRepository;
+    private final JdbcTemplate jdbcTemplate;
     /** 文章-标签关联数据访问 */
     private final ArticleTagQueryRepository articleTagQueryRepository;
     private final CommunityPostTagQueryRepository communityPostTagQueryRepository;
@@ -56,8 +61,12 @@ public class TagService {
      * @return 标签列表
      */
     @Transactional(readOnly = true)
-    public List<Tag> list() {
-        return tagRepository.findAllByOrderByCreatedAtDesc();
+    public List<TagPublicResponse> list() {
+        List<Tag> tags = tagRepository.findAllByOrderByCreatedAtDesc();
+        Map<Long, Long> articleCounts = loadArticleCountsByTagId();
+        return tags.stream()
+                .map(tag -> TagPublicResponse.from(tag, articleCounts.get(tag.getId())))
+                .toList();
     }
 
     /**
@@ -176,6 +185,20 @@ public class TagService {
             sb.append(RANDOM_CHARS[secureRandom.nextInt(RANDOM_CHARS.length)]);
         }
         return sb.toString();
+    }
+
+    private Map<Long, Long> loadArticleCountsByTagId() {
+        String sql = "SELECT tag_id, COUNT(*) AS article_count FROM article_tag GROUP BY tag_id";
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+        Map<Long, Long> result = new HashMap<>();
+        for (Map<String, Object> row : rows) {
+            Object tagIdValue = row.get("tag_id");
+            Object articleCountValue = row.get("article_count");
+            if (tagIdValue instanceof Number tagId && articleCountValue instanceof Number articleCount) {
+                result.put(tagId.longValue(), articleCount.longValue());
+            }
+        }
+        return result;
     }
 }
 

@@ -23,6 +23,11 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  option, optgroup {
+    background-color: #030014;
+    color: rgb(226 232 240);
+  }
 }
 
 ::-webkit-scrollbar {

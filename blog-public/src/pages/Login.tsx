@@ -6,6 +6,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { User, Key, ArrowRight } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
+import Seo from '../components/Seo';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -41,6 +42,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#030014] flex items-center justify-center relative overflow-hidden font-sans pt-16">
+      <Seo title="登录" description="登录社区账号以继续发帖、评论和互动。" path="/login" noindex />
       {/* 背景效果 */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute top-[-20%] left-[-10%] w-[120%] h-[120%] bg-[radial-gradient(circle_at_50%_50%,rgba(76,29,149,0.1),transparent_50%)]"></div>

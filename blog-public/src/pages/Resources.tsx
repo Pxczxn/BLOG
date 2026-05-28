@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { ExternalLink, Download, Wrench, Layout, Globe } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
+import Seo from '../components/Seo';
+import { buildBreadcrumbJsonLd, buildMetaDescription } from '../lib/siteSettings';
 
 type ResourceItem = {
   name: string;
@@ -57,9 +59,22 @@ export default function Resources() {
   const { type } = useParams();
   const selectedSection = type ? RESOURCE_SECTIONS.find((section) => section.key === type) ?? null : null;
   const sections = selectedSection ? [selectedSection] : RESOURCE_SECTIONS;
+  const seoTitle = selectedSection ? `${selectedSection.title}资源` : '资源库';
+  const seoDescription = buildMetaDescription(
+    selectedSection ? selectedSection.subtitle : '收集并整理优质工具、素材与技术入口，帮助更快完成设计与开发工作。',
+  );
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <Seo
+        title={seoTitle}
+        description={seoDescription}
+        path={selectedSection ? `/resources/${selectedSection.key}` : '/resources'}
+        jsonLd={buildBreadcrumbJsonLd([
+          { name: '首页', path: '/' },
+          { name: '资源', path: '/resources' },
+        ])}
+      />
       <div className="mb-10 text-center">
         <motion.h1
           initial={{ opacity: 0, y: 20 }}

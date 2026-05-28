@@ -28,6 +28,8 @@ import com.pxczxn.blog.community.post.dto.PublicCommunityPostDetailResponse;
 import com.pxczxn.blog.community.post.dto.PublicCommunityPostListItemResponse;
 import com.pxczxn.blog.community.post.entity.CommunityPost;
 import com.pxczxn.blog.community.post.entity.CommunityPostStatus;
+import com.pxczxn.blog.community.post.comment.entity.CommunityPostCommentStatus;
+import com.pxczxn.blog.community.post.comment.repository.CommunityPostCommentRepository;
 import com.pxczxn.blog.community.post.exception.CommunityPostNotFoundException;
 import com.pxczxn.blog.community.post.repository.CommunityPostRepository;
 import com.pxczxn.blog.community.post.repository.CommunityPostTagQueryRepository;
@@ -77,6 +79,7 @@ public class CommunityPostService {
     private final CommunityInteractionService communityInteractionService;
     private final ModerationService moderationService;
     private final CommunityPostTagQueryRepository communityPostTagQueryRepository;
+    private final CommunityPostCommentRepository communityPostCommentRepository;
     private final TagRepository tagRepository;
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -227,11 +230,21 @@ public class CommunityPostService {
         Page<CommunityPost> result = communityPostRepository.findAll(buildAdminSpecification(statusFilter, nodeId, keyword), pageable);
         Map<Long, CommunityNode> nodes = loadNodes(result.getContent().stream().map(CommunityPost::getNodeId).toList());
         Map<Long, CommunityUser> authors = loadAuthors(result.getContent().stream().map(CommunityPost::getAuthorId).toList());
+        Map<Long, Long> likeCounts = communityInteractionService.buildPostInteractionMap(
+                result.getContent().stream().map(CommunityPost::getId).toList(),
+                null
+        ).values().stream().collect(java.util.stream.Collectors.toMap(
+                PostInteractionResponse::getPostId,
+                PostInteractionResponse::getLikeCount
+        ));
+        Map<Long, Long> commentCounts = loadApprovedCommentCounts(result.getContent().stream().map(CommunityPost::getId).toList());
         List<AdminCommunityPostListItemResponse> items = result.getContent().stream()
                 .map(post -> AdminCommunityPostListItemResponse.from(
                         post,
                         nodes.get(post.getNodeId()) != null ? nodes.get(post.getNodeId()).getName() : null,
-                        authors.get(post.getAuthorId()) != null ? authors.get(post.getAuthorId()).getDisplayName() : null
+                        authors.get(post.getAuthorId()) != null ? authors.get(post.getAuthorId()).getDisplayName() : null,
+                        likeCounts.getOrDefault(post.getId(), 0L),
+                        commentCounts.getOrDefault(post.getId(), 0L)
                 ))
                 .toList();
         return new PageResponse<>(items, result.getTotalElements(), page, result.getSize());
@@ -438,6 +451,19 @@ public class CommunityPostService {
             result.put(entry.getKey(), tags);
         }
         return result;
+    }
+
+    private Map<Long, Long> loadApprovedCommentCounts(List<Long> postIds) {
+        if (postIds == null || postIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return communityPostCommentRepository.countByPostIdsAndStatus(postIds, CommunityPostCommentStatus.APPROVED)
+                .stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        com.pxczxn.blog.community.interaction.repository.PostCountProjection::getPostId,
+                        com.pxczxn.blog.community.interaction.repository.PostCountProjection::getCount
+                ));
     }
 
     private CommunityPostStatus resolveWritableStatus(CommunityPostStatus requestedStatus) {
