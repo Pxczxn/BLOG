@@ -55,7 +55,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/", "/index.html", "/static/**").permitAll()
-                        .requestMatchers("/api/admin/login", "/api/admin/ping").permitAll()
+                        .requestMatchers("/api/admin/login", "/api/admin/refresh", "/api/admin/ping").permitAll()
                         .requestMatchers("/api/community/auth/**").permitAll()
                         .requestMatchers("/api/public/**", "/api/articles/**").permitAll()
                         .requestMatchers("/api/community/posts/{id}/interaction").permitAll()

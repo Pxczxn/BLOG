@@ -31,8 +31,8 @@ public class JwtService {
 
     /** JWT 签名密钥，使用 HMAC-SHA 算法 */
     private final SecretKey key;
-    /** 令牌过期时间（毫秒），默认 24 小时 */
-    private final long jwtExpiration;
+    /** Access token expiration in milliseconds. */
+    private final long accessTokenExpiration;
     private final TokenRevokedRepository tokenRevokedRepository;
     private final DeviceSessionRepository deviceSessionRepository;
     private final AdminUserRepository adminUserRepository;
@@ -48,7 +48,7 @@ public class JwtService {
      * @throws IllegalStateException 如果密钥为空或长度不足
      */
     public JwtService(@Value("${jwt.secret}") String secret,
-                      @Value("${jwt.expiration:86400000}") long jwtExpiration,
+                      @Value("${jwt.access-expiration:${jwt.expiration:900000}}") long accessTokenExpiration,
                       TokenRevokedRepository tokenRevokedRepository,
                       DeviceSessionRepository deviceSessionRepository,
                       AdminUserRepository adminUserRepository) {
@@ -59,7 +59,7 @@ public class JwtService {
             throw new IllegalStateException("JWT_SECRET 长度不能少于 32 个字符");
         }
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.jwtExpiration = jwtExpiration;
+        this.accessTokenExpiration = accessTokenExpiration;
         this.tokenRevokedRepository = tokenRevokedRepository;
         this.deviceSessionRepository = deviceSessionRepository;
         this.adminUserRepository = adminUserRepository;
@@ -77,8 +77,12 @@ public class JwtService {
      * @return 签名后的 JWT 令牌字符串
      */
     public String generateToken(Long userId, String username, String deviceId, String role) {
+        return generateAccessToken(userId, username, deviceId, role);
+    }
+
+    public String generateAccessToken(Long userId, String username, String deviceId, String role) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpiration);
+        Date expiryDate = new Date(now.getTime() + accessTokenExpiration);
 
         return Jwts.builder()
                 .id(UUID.randomUUID().toString())

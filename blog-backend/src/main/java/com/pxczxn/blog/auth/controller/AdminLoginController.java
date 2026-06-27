@@ -6,9 +6,11 @@
  */
 package com.pxczxn.blog.auth.controller;
 
+import com.pxczxn.blog.auth.dto.AdminAuthResult;
 import com.pxczxn.blog.auth.dto.LoginRequest;
 import com.pxczxn.blog.auth.dto.LoginResponse;
 import com.pxczxn.blog.auth.dto.TokenValidationResult;
+import com.pxczxn.blog.auth.service.AdminRefreshTokenService;
 import com.pxczxn.blog.auth.service.DeviceSessionService;
 import com.pxczxn.blog.auth.service.JwtService;
 import com.pxczxn.blog.auth.service.LoginService;
@@ -33,10 +35,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminLoginController {
 
+    private static final String LEGACY_ACCESS_COOKIE = "jwt";
+    private static final String REFRESH_COOKIE = "admin_refresh";
+
     private final LoginService loginService;
     private final LogoutService logoutService;
     private final JwtService jwtService;
     private final DeviceSessionService deviceSessionService;
+    private final AdminRefreshTokenService adminRefreshTokenService;
 
     /** 是否启用 Cookie Secure 标志（生产环境为 true） */
     @Value("${app.security.cookie-secure:true}")
@@ -49,9 +55,23 @@ public class AdminLoginController {
      */
     @PostMapping("/login")
     public Result<LoginResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-        LoginResponse response = loginService.login(request, httpRequest);
-        writeJwtCookie(httpResponse, response.getToken(), 86400);
-        return Result.success(response);
+        AdminAuthResult result = loginService.login(request, httpRequest);
+        writeRefreshCookie(httpResponse, result.refreshToken(), jwtRefreshMaxAgeSeconds());
+        clearLegacyAccessCookie(httpResponse);
+        return Result.success(result.response());
+    }
+
+    @PostMapping("/refresh")
+    public Result<LoginResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = resolveCookie(request, REFRESH_COOKIE);
+        if (refreshToken == null) {
+            clearAuthCookies(response);
+            return Result.error(ApiErrorCode.AUTH_REQUIRED);
+        }
+        AdminAuthResult result = loginService.refresh(refreshToken);
+        writeRefreshCookie(response, result.refreshToken(), jwtRefreshMaxAgeSeconds());
+        clearLegacyAccessCookie(response);
+        return Result.success(result.response());
     }
 
     /** 管理员登出，将令牌加入黑名单并清除 Cookie */
@@ -60,8 +80,13 @@ public class AdminLoginController {
         String token = RequestTokenResolver.resolve(request);
         if (token != null) {
             logoutService.logout(token);
+        } else {
+            String refreshToken = resolveCookie(request, REFRESH_COOKIE);
+            if (refreshToken != null) {
+                logoutService.logoutByRefreshToken(refreshToken);
+            }
         }
-        writeJwtCookie(response, "", 0);
+        clearAuthCookies(response);
         return Result.success("退出成功", null);
     }
 
@@ -113,13 +138,44 @@ public class AdminLoginController {
      * @param token    JWT 令牌（登出时传空字符串）
      * @param maxAge   Cookie 有效期（秒），登出时传 0 立即失效
      */
-    private void writeJwtCookie(HttpServletResponse response, String token, int maxAge) {
-        Cookie cookie = new Cookie("jwt", token);
+    private void writeRefreshCookie(HttpServletResponse response, String token, int maxAge) {
+        Cookie cookie = new Cookie(REFRESH_COOKIE, token);
         cookie.setHttpOnly(true);
         cookie.setSecure(cookieSecure);
-        cookie.setPath("/");
+        cookie.setPath("/api/admin");
         cookie.setMaxAge(maxAge);
         cookie.setAttribute("SameSite", "Lax");
         response.addCookie(cookie);
+    }
+
+    private void clearAuthCookies(HttpServletResponse response) {
+        writeRefreshCookie(response, "", 0);
+        clearLegacyAccessCookie(response);
+    }
+
+    private void clearLegacyAccessCookie(HttpServletResponse response) {
+        Cookie cookie = new Cookie(LEGACY_ACCESS_COOKIE, "");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(cookieSecure);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        cookie.setAttribute("SameSite", "Lax");
+        response.addCookie(cookie);
+    }
+
+    private int jwtRefreshMaxAgeSeconds() {
+        return adminRefreshTokenService.refreshCookieMaxAgeSeconds();
+    }
+
+    private String resolveCookie(HttpServletRequest request, String name) {
+        if (request.getCookies() == null) {
+            return null;
+        }
+        for (Cookie cookie : request.getCookies()) {
+            if (name.equals(cookie.getName()) && cookie.getValue() != null && !cookie.getValue().isBlank()) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 }

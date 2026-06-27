@@ -33,5 +33,19 @@ export default defineConfig(() => {
         },
       },
     },
+    build: {
+      cssCodeSplit: true,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ['react', 'react-dom', 'react-router-dom'],
+            charts: ['recharts'],
+            motion: ['motion'],
+            markdown: ['react-markdown', 'remark-gfm'],
+            ui: ['lucide-react', 'react-hot-toast', 'react-helmet-async'],
+          },
+        },
+      },
+    },
   };
 });

@@ -6,8 +6,10 @@
  */
 package com.pxczxn.blog.auth.service;
 
+import com.pxczxn.blog.auth.dto.AdminAuthResult;
 import com.pxczxn.blog.auth.dto.LoginRequest;
 import com.pxczxn.blog.auth.dto.LoginResponse;
+import com.pxczxn.blog.auth.entity.DeviceSession;
 import com.pxczxn.blog.auth.exception.LoginException;
 import com.pxczxn.blog.user.entity.AdminUser;
 import com.pxczxn.blog.user.entity.AdminUserStatus;
@@ -32,6 +34,7 @@ public class LoginService {
     private final LoginAttemptService loginAttemptService;
     private final DeviceSessionService deviceSessionService;
     private final JwtService jwtService;
+    private final AdminRefreshTokenService adminRefreshTokenService;
 
     /**
      * 管理员登录
@@ -45,7 +48,7 @@ public class LoginService {
      * @throws LoginException 登录失败时抛出（账号锁定/禁用/密码错误）
      */
     @Transactional
-    public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
+    public AdminAuthResult login(LoginRequest request, HttpServletRequest httpRequest) {
         // 标准化登录标识（用户名/邮箱），统一转为小写
         String identifier = normalizeIdentifier(request.getUsername());
 
@@ -87,13 +90,14 @@ public class LoginService {
         String deviceId = normalizeDeviceId(request.getDeviceId(), httpRequest);
         String ip = getClientIp(httpRequest);
         String userAgent = httpRequest.getHeader("User-Agent");
-        deviceSessionService.createOrUpdateSession(user, deviceId, request.getDeviceName(), ip, userAgent);
+        DeviceSession session = deviceSessionService.createOrUpdateSession(user, deviceId, request.getDeviceName(), ip, userAgent);
 
-        String token = jwtService.generateToken(user.getId(), user.getUsername(), deviceId, user.getRole());
+        String token = jwtService.generateAccessToken(user.getId(), user.getUsername(), deviceId, user.getRole());
+        AdminRefreshTokenService.IssuedRefreshToken refreshToken = adminRefreshTokenService.issue(session);
         LocalDateTime now = LocalDateTime.now();
         log.info("登录成功: username={}, ip={}, deviceId={}", user.getUsername(), ip, deviceId);
 
-        return LoginResponse.builder()
+        LoginResponse response = LoginResponse.builder()
                 .userId(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
@@ -104,6 +108,33 @@ public class LoginService {
                 .token(token)
                 .expiresAt(jwtService.getExpirationDate(token).toInstant())
                 .build();
+        return new AdminAuthResult(response, refreshToken.token(), refreshToken.expiresAt());
+    }
+
+    @Transactional
+    public AdminAuthResult refresh(String refreshToken) {
+        DeviceSession session = adminRefreshTokenService.findValidSession(refreshToken)
+                .orElseThrow(LoginException::invalidCredentials);
+        AdminUser user = session.getAdminUser();
+        if (AdminUserStatus.BANNED.equals(user.getStatus())) {
+            throw LoginException.accountBanned();
+        }
+
+        session.setLastSeenAt(LocalDateTime.now());
+        String token = jwtService.generateAccessToken(user.getId(), user.getUsername(), session.getDeviceId(), user.getRole());
+        AdminRefreshTokenService.IssuedRefreshToken issuedRefreshToken = adminRefreshTokenService.issue(session);
+
+        LoginResponse response = LoginResponse.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .deviceId(session.getDeviceId())
+                .token(token)
+                .expiresAt(jwtService.getExpirationDate(token).toInstant())
+                .build();
+
+        return new AdminAuthResult(response, issuedRefreshToken.token(), issuedRefreshToken.expiresAt());
     }
 
     /** 标准化登录标识，去除首尾空格并转小写 */

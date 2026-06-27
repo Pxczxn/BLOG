@@ -65,6 +65,12 @@ public class DeviceSession {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "refresh_token_hash", length = 128)
+    private String refreshTokenHash;
+
+    @Column(name = "refresh_token_expires_at")
+    private LocalDateTime refreshTokenExpiresAt;
+
     /** 持久化前自动设置时间字段 */
     @PrePersist
     protected void onCreate() {

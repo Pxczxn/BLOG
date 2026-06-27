@@ -25,6 +25,7 @@ public class LogoutService {
     private final JwtService jwtService;
     private final TokenRevokedRepository tokenRevokedRepository;
     private final DeviceSessionService deviceSessionService;
+    private final AdminRefreshTokenService adminRefreshTokenService;
 
     /**
      * 执行登出
@@ -61,6 +62,16 @@ public class LogoutService {
         if (deviceId != null && !deviceId.isBlank()) {
             deviceSessionService.deactivateSessionByDeviceId(userId, deviceId);
         }
+    }
+
+    @Transactional
+    public void logoutByRefreshToken(String refreshToken) {
+        adminRefreshTokenService.findValidSession(refreshToken).ifPresent(session -> {
+            adminRefreshTokenService.clear(session);
+            session.setIsActive(false);
+            log.info("Refresh session logged out: userId={}, deviceId={}",
+                    session.getAdminUser().getId(), session.getDeviceId());
+        });
     }
 }
 

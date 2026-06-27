@@ -23,5 +23,7 @@ public interface DeviceSessionRepository extends JpaRepository<DeviceSession, Lo
 
     /** 按用户ID和设备ID查询活跃会话 */
     Optional<DeviceSession> findByAdminUser_IdAndDeviceIdAndIsActiveTrue(Long adminUserId, String deviceId);
+
+    Optional<DeviceSession> findByRefreshTokenHashAndIsActiveTrue(String refreshTokenHash);
 }
 

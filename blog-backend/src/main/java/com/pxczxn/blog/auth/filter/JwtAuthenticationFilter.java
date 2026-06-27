@@ -91,6 +91,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         return !path.startsWith("/api/admin/")
                 || "/api/admin/login".equals(path)
+                || "/api/admin/refresh".equals(path)
                 || "/api/admin/ping".equals(path);
     }
 }
