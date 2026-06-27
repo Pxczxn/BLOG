@@ -5,10 +5,11 @@ package com.pxczxn.blog.community.repository;
 
 import com.pxczxn.blog.community.entity.CommunityUser;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.Optional;
 
-public interface CommunityUserRepository extends JpaRepository<CommunityUser, Long> {
+public interface CommunityUserRepository extends JpaRepository<CommunityUser, Long>, JpaSpecificationExecutor<CommunityUser> {
 
     /**
      * 根据用户名查找社区用户

@@ -1,17 +1,15 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  FileText,
-  FolderTree,
-  Tags,
-  MessageSquare,
-  Users,
-  Settings,
-  Search,
   Bell,
-  ShieldAlert,
+  FileText,
   Flag,
-  UserCircle
+  FolderTree,
+  LayoutDashboard,
+  Search,
+  Settings,
+  ShieldAlert,
+  Tags,
+  Users,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import Seo from '../components/Seo';
@@ -21,6 +19,7 @@ const MENU_ITEMS = [
   { icon: FileText, label: '文章管理', path: '/admin-pxczxn/articles' },
   { icon: FolderTree, label: '分类管理', path: '/admin-pxczxn/categories' },
   { icon: Tags, label: '标签管理', path: '/admin-pxczxn/tags' },
+  { icon: Users, label: '用户管理', path: '/admin-pxczxn/users' },
   { icon: Users, label: '社区帖子', path: '/admin-pxczxn/community' },
   { icon: ShieldAlert, label: '审核任务', path: '/admin-pxczxn/moderation' },
   { icon: Flag, label: '举报处理', path: '/admin-pxczxn/reports' },
@@ -34,7 +33,7 @@ export default function AdminLayout() {
     <div className="flex h-screen max-h-screen overflow-hidden bg-[#030014] font-sans text-slate-200 selection:bg-purple-500/30">
       <Seo title="管理后台" description="站点后台管理界面" noindex />
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute top-[-10%] left-[-10%] h-[120%] w-[120%] bg-[radial-gradient(circle_at_50%_50%,rgba(76,29,149,0.08),transparent_50%)]" />
+        <div className="absolute left-[-10%] top-[-10%] h-[120%] w-[120%] bg-[radial-gradient(circle_at_50%_50%,rgba(76,29,149,0.08),transparent_50%)]" />
       </div>
 
       <aside className="relative z-20 flex h-full w-64 shrink-0 flex-col overflow-hidden border-r border-white/10 bg-slate-950/85">
@@ -85,7 +84,7 @@ export default function AdminLayout() {
           <div className="flex items-center gap-6">
             <button className="relative text-slate-400 transition-colors hover:text-white">
               <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full border border-[#030014] bg-pink-500" />
+              <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full border border-[#030014] bg-pink-500" />
             </button>
 
             <div className="flex items-center gap-3 border-l border-white/10 pl-6">
@@ -103,9 +102,7 @@ export default function AdminLayout() {
         </header>
 
         <main className="min-h-0 flex-1 overflow-y-auto p-8">
-          <div>
-            <Outlet />
-          </div>
+          <Outlet />
         </main>
       </div>
     </div>

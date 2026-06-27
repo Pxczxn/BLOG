@@ -30,6 +30,7 @@ const ArticleEditor = lazy(() => import('./pages/admin-pxczxn/ArticleEditor'));
 const CategoryManage = lazy(() => import('./pages/admin-pxczxn/CategoryManage'));
 const TagManage = lazy(() => import('./pages/admin-pxczxn/TagManage'));
 const CommunityManage = lazy(() => import('./pages/admin-pxczxn/CommunityManage'));
+const UserManage = lazy(() => import('./pages/admin-pxczxn/UserManage'));
 const ArticleCommentManage = lazy(() => import('./pages/admin-pxczxn/ArticleCommentManage.tsx')); // Force Vite reload
 const CommunityCommentManage = lazy(() => import('./pages/admin-pxczxn/CommunityCommentManage.tsx')); // Force Vite reload
 const ModerationManage = lazy(() => import('./pages/admin-pxczxn/ModerationManage'));
@@ -107,6 +108,7 @@ export default function App() {
                 <Route path="articles/comments" element={<ArticleCommentManage />} />
                 <Route path="categories" element={<CategoryManage />} />
                 <Route path="tags" element={<TagManage />} />
+                <Route path="users" element={<UserManage />} />
                 <Route path="community" element={<CommunityManage />} />
                 <Route path="community/comments" element={<CommunityCommentManage />} />
                 <Route path="moderation" element={<ModerationManage />} />
