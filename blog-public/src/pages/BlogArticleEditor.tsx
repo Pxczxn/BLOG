@@ -9,11 +9,10 @@ import {
   Code2,
   Edit3,
   Eye,
+  Heading1,
   Heading2,
   Heading3,
-  Heading1,
   ImagePlus,
-  Image as ImageIcon,
   Italic,
   Link as LinkIcon,
   List,
@@ -23,7 +22,7 @@ import {
   Send,
   Upload,
 } from 'lucide-react';
-import request from '../lib/request';
+import request, { getStaticUrl } from '../lib/request';
 import { useAuth } from '../lib/AuthContext';
 import Seo from '../components/Seo';
 
@@ -38,12 +37,15 @@ type TagOption = {
 };
 
 const MAX_SELECTED_TAGS = 8;
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const ACCEPTED_IMAGE_EXTENSIONS = '.jpg,.jpeg,.png,.webp,.gif';
 
 export default function BlogArticleEditor() {
   const { user, initializing } = useAuth();
   const navigate = useNavigate();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const coverInputRef = useRef<HTMLInputElement | null>(null);
+  const contentImageInputRef = useRef<HTMLInputElement | null>(null);
 
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
@@ -56,6 +58,7 @@ export default function BlogArticleEditor() {
   const [previewMode, setPreviewMode] = useState<'write' | 'preview'>('write');
   const [loadingMeta, setLoadingMeta] = useState(true);
   const [coverUploading, setCoverUploading] = useState(false);
+  const [contentImageUploading, setContentImageUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -71,12 +74,11 @@ export default function BlogArticleEditor() {
         ]);
 
         if (!mounted) return;
-
         setCategories((categoryRes?.data ?? categoryRes ?? []) as CategoryOption[]);
         setTags((tagRes?.data ?? tagRes ?? []) as TagOption[]);
       } catch {
         if (mounted) {
-          setError('分类和标签加载失败，刷新页面再试一次。');
+          setError('分类和标签加载失败，请刷新页面再试。');
         }
       } finally {
         if (mounted) {
@@ -86,7 +88,6 @@ export default function BlogArticleEditor() {
     }
 
     loadMeta();
-
     return () => {
       mounted = false;
     };
@@ -110,7 +111,6 @@ export default function BlogArticleEditor() {
     const nextValue = `${content.slice(0, start)}${before}${selected}${after}${content.slice(end)}`;
     const selectionStart = start + before.length;
     const selectionEnd = selectionStart + selected.length;
-
     updateContentWithSelection(nextValue, selectionStart, selectionEnd);
   };
 
@@ -126,7 +126,6 @@ export default function BlogArticleEditor() {
       .map((line) => `${prefix}${line}`)
       .join('\n');
     const nextValue = `${content.slice(0, start)}${prefixed}${content.slice(end)}`;
-
     updateContentWithSelection(nextValue, start + prefix.length, start + prefixed.length);
   };
 
@@ -141,36 +140,56 @@ export default function BlogArticleEditor() {
     const nextBlock = `${needsBeforeBreak ? '\n' : ''}${block}${needsAfterBreak ? '\n' : ''}`;
     const nextValue = `${content.slice(0, start)}${nextBlock}${content.slice(end)}`;
     const nextCursor = start + (needsBeforeBreak ? 1 : 0) + cursorOffset;
-
     updateContentWithSelection(nextValue, nextCursor, nextCursor);
   };
 
-  const handleCoverUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const insertImageMarkdown = (url: string, alt = '图片') => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? content.length;
+    const end = textarea?.selectionEnd ?? content.length;
+    const markdown = `\n![${alt}](${url})\n`;
+    const nextValue = `${content.slice(0, start)}${markdown}${content.slice(end)}`;
+    const cursor = start + markdown.length;
+    updateContentWithSelection(nextValue, cursor, cursor);
+  };
+
+  const uploadImage = async (file: File, target: 'cover' | 'content') => {
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      toast.error('仅支持 JPG、PNG、WebP、GIF 图片', { duration: 1800 });
+      return;
+    }
 
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      setCoverUploading(true);
+      if (target === 'cover') {
+        setCoverUploading(true);
+      } else {
+        setContentImageUploading(true);
+      }
       const res: any = await request.post('/api/community/upload/cover', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      const url = res?.data?.url || res?.data || res?.url || res;
-      if (typeof url === 'string') {
+      const data = res?.data ?? res;
+      const url = data?.url || data;
+      if (typeof url !== 'string') {
+        throw new Error('上传接口没有返回图片地址');
+      }
+      if (target === 'cover') {
         setCoverImage(url);
         toast.success('封面上传成功', { duration: 1500 });
       } else {
-        toast.error('封面上传成功，但没有拿到图片地址', { duration: 1800 });
+        insertImageMarkdown(url, file.name.replace(/\.[^.]+$/, '') || '图片');
+        toast.success('图片已插入正文', { duration: 1500 });
       }
     } catch (err: any) {
-      toast.error(err?.message || '封面上传失败', { duration: 1800 });
+      toast.error(err?.message || '图片上传失败', { duration: 1800 });
     } finally {
       setCoverUploading(false);
-      if (event.target) {
-        event.target.value = '';
-      }
+      setContentImageUploading(false);
+      if (coverInputRef.current) coverInputRef.current.value = '';
+      if (contentImageInputRef.current) contentImageInputRef.current.value = '';
     }
   };
 
@@ -179,11 +198,10 @@ export default function BlogArticleEditor() {
       if (current.includes(tagId)) {
         return current.filter((id) => id !== tagId);
       }
-
       if (current.length >= MAX_SELECTED_TAGS) {
+        toast.error(`最多选择 ${MAX_SELECTED_TAGS} 个标签`);
         return current;
       }
-
       return [...current, tagId];
     });
   };
@@ -246,9 +264,9 @@ export default function BlogArticleEditor() {
     {
       label: '插入',
       items: [
-        { label: '代码块', icon: Code2, action: () => insertBlock('```js\nconsole.log(\"hello\");\n```\n', 6) },
+        { label: '代码块', icon: Code2, action: () => insertBlock('```js\nconsole.log("hello");\n```\n', 6) },
         { label: '链接', icon: LinkIcon, action: () => insertInline('[', '](https://example.com)', '链接文字') },
-        { label: '图片', icon: ImagePlus, action: () => insertInline('![', '](https://example.com/image.png)', '图片描述') },
+        { label: '图片', icon: ImagePlus, action: () => contentImageInputRef.current?.click() },
         { label: '分割线', icon: Minus, action: () => insertBlock('---\n') },
       ],
     },
@@ -285,10 +303,7 @@ export default function BlogArticleEditor() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
       <Seo title="写文章" description="创建新的博客文章。" path="/blog/new" noindex />
-      <Link
-        to="/blog"
-        className="mb-8 inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-white"
-      >
+      <Link to="/blog" className="mb-8 inline-flex items-center gap-2 text-sm text-slate-400 transition-colors hover:text-white">
         <ArrowLeft className="h-4 w-4" />
         返回博客
       </Link>
@@ -310,7 +325,9 @@ export default function BlogArticleEditor() {
               onChange={(event) => setCategoryId(event.target.value)}
               className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300 outline-none transition focus:border-purple-400 [&>option]:bg-slate-950 [&>option]:text-slate-100"
             >
-              <option value="" className="bg-slate-950 text-slate-100">选择分类...</option>
+              <option value="" className="bg-slate-950 text-slate-100">
+                选择分类...
+              </option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id} className="bg-slate-950 text-slate-100">
                   {category.name}
@@ -321,16 +338,7 @@ export default function BlogArticleEditor() {
 
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-300">封面图</label>
-            <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-              <div className="relative">
-                <ImageIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                <input
-                  value={coverImage}
-                  onChange={(event) => setCoverImage(event.target.value)}
-                  placeholder="可粘贴 URL，也可以右侧上传"
-                  className="w-full rounded-2xl border border-white/10 bg-black/20 py-3 pl-11 pr-4 text-sm text-slate-300 outline-none transition focus:border-purple-400"
-                />
-              </div>
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 disabled={coverUploading}
@@ -338,21 +346,25 @@ export default function BlogArticleEditor() {
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-purple-400/40 bg-purple-500/15 px-4 py-3 text-sm font-semibold text-purple-100 transition hover:bg-purple-500/25 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Upload className="h-4 w-4" />
-                {coverUploading ? '上传中' : '本地上传'}
+                {coverUploading ? '上传中' : coverImage ? '更换本地图片' : '本地上传'}
               </button>
+              <span className="text-xs text-slate-500">仅支持 JPG、PNG、WebP、GIF 本地图片</span>
               <input
                 ref={coverInputRef}
                 type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                onChange={handleCoverUpload}
+                accept={ACCEPTED_IMAGE_EXTENSIONS}
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) uploadImage(file, 'cover');
+                }}
                 className="hidden"
               />
             </div>
-            {coverImage && (
+            {coverImage ? (
               <div className="mt-3 overflow-hidden rounded-2xl border border-white/10 bg-black/20">
-                <img src={coverImage} alt="封面预览" className="h-32 w-full object-cover" />
+                <img src={getStaticUrl(coverImage)} alt="封面预览" className="h-32 w-full object-cover" />
               </div>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -404,9 +416,7 @@ export default function BlogArticleEditor() {
                 </button>
               );
             })}
-            {!loadingMeta && tags.length === 0 && (
-              <span className="text-sm text-slate-500">暂无可选标签。</span>
-            )}
+            {!loadingMeta && tags.length === 0 ? <span className="text-sm text-slate-500">暂无可选标签。</span> : null}
           </div>
         </div>
 
@@ -439,13 +449,8 @@ export default function BlogArticleEditor() {
 
           <div className="mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-black/20 p-2">
             {toolbarGroups.map((group) => (
-              <div
-                key={group.label}
-                className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1"
-              >
-                <span className="hidden px-2 text-[11px] font-medium text-slate-500 sm:inline">
-                  {group.label}
-                </span>
+              <div key={group.label} className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/[0.03] p-1">
+                <span className="hidden px-2 text-[11px] font-medium text-slate-500 sm:inline">{group.label}</span>
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -456,58 +461,63 @@ export default function BlogArticleEditor() {
                       title={item.label}
                       className="inline-flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold text-slate-300 transition hover:bg-purple-500/20 hover:text-white"
                     >
-                      {'short' in item && item.short ? (
-                        <span>{item.short}</span>
-                      ) : (
-                        <Icon className="h-4 w-4" />
-                      )}
+                      {'short' in item && item.short ? <span>{item.short}</span> : <Icon className="h-4 w-4" />}
                     </button>
                   );
                 })}
               </div>
             ))}
+            <input
+              ref={contentImageInputRef}
+              type="file"
+              accept={ACCEPTED_IMAGE_EXTENSIONS}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) uploadImage(file, 'content');
+              }}
+              className="hidden"
+            />
+            {contentImageUploading ? <span className="px-2 text-xs text-purple-200">图片上传中...</span> : null}
           </div>
 
-          <div>
-            {previewMode === 'write' ? (
-              <textarea
-                ref={textareaRef}
-                value={content}
-                onChange={(event) => setContent(event.target.value)}
-                placeholder="在这里写正文，支持 Markdown..."
-                className="h-[460px] w-full resize-y rounded-2xl border border-purple-500/40 bg-black/20 px-5 py-4 text-white outline-none transition placeholder:text-slate-600 focus:border-purple-400"
-              />
-            ) : (
-              <div className="min-h-[460px] rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
-                  <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-300">
-                    <Eye className="h-4 w-4 text-purple-300" />
-                    实时预览
-                  </span>
-                  <span className="text-xs text-slate-500">{content.length} 字符</span>
-                </div>
-
-                {content.trim() ? (
-                  <article className="prose prose-invert max-w-none prose-headings:text-white prose-p:text-slate-300 prose-a:text-purple-300 prose-strong:text-white prose-code:text-purple-200 prose-pre:border prose-pre:border-white/10 prose-pre:bg-black/30">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-                  </article>
-                ) : (
-                  <div className="flex min-h-60 flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 text-center text-slate-500">
-                    <Edit3 className="mb-3 h-8 w-8 text-purple-300/70" />
-                    <p className="font-medium text-slate-400">预览会显示在这里</p>
-                    <p className="mt-1 text-sm">写一点 Markdown，就能看到发布后的效果。</p>
-                  </div>
-                )}
+          {previewMode === 'write' ? (
+            <textarea
+              ref={textareaRef}
+              value={content}
+              onChange={(event) => setContent(event.target.value)}
+              placeholder="在这里写正文，支持 Markdown..."
+              className="h-[460px] w-full resize-y rounded-2xl border border-purple-500/40 bg-black/20 px-5 py-4 text-white outline-none transition placeholder:text-slate-600 focus:border-purple-400"
+            />
+          ) : (
+            <div className="min-h-[460px] rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+              <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
+                <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-300">
+                  <Eye className="h-4 w-4 text-purple-300" />
+                  实时预览
+                </span>
+                <span className="text-xs text-slate-500">{content.length} 字符</span>
               </div>
-            )}
-          </div>
+
+              {content.trim() ? (
+                <article className="prose prose-invert max-w-none prose-headings:text-white prose-p:text-slate-300 prose-a:text-purple-300 prose-strong:text-white prose-code:text-purple-200 prose-pre:border prose-pre:border-white/10 prose-pre:bg-black/30">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+                </article>
+              ) : (
+                <div className="flex min-h-60 flex-col items-center justify-center rounded-2xl border border-dashed border-white/10 text-center text-slate-500">
+                  <Edit3 className="mb-3 h-8 w-8 text-purple-300/70" />
+                  <p className="font-medium text-slate-400">预览会显示在这里</p>
+                  <p className="mt-1 text-sm">写一点 Markdown，就能看到发布后的效果。</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {error && (
+        {error ? (
           <div className="mt-6 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
             {error}
           </div>
-        )}
+        ) : null}
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-end">
           <Link
