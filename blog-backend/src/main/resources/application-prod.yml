@@ -13,7 +13,6 @@ spring:
       idle-timeout: 300000
       max-lifetime: 1800000
   jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect
     show-sql: false
     open-in-view: false
   messages:
