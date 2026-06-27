@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
-import { Ban, CheckCircle2, Filter, RefreshCcw, Search, Shield, UserCog, Users } from 'lucide-react';
+import { Ban, Check, CheckCircle2, ChevronDown, Filter, RefreshCcw, Search, Shield, UserCog, Users } from 'lucide-react';
 import request, { getStaticUrl } from '../../lib/request';
 import AdminPageHeader from '../../components/admin/AdminPageHeader';
 
@@ -52,13 +52,14 @@ export default function UserManage() {
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  const stats = useMemo(() => {
-    return {
+  const stats = useMemo(
+    () => ({
       active: users.filter((user) => user.status === 'ACTIVE').length,
       banned: users.filter((user) => user.status === 'BANNED').length,
       moderators: users.filter((user) => user.role === 'MODERATOR').length,
-    };
-  }, [users]);
+    }),
+    [users],
+  );
 
   const fetchUsers = async () => {
     try {
@@ -253,27 +254,27 @@ export default function UserManage() {
                           <div className="mt-1 max-w-[260px] truncate text-xs text-slate-600">{user.bio || '暂无简介'}</div>
                         </td>
                         <td className="px-5 py-4 text-center">
-                          <select
+                          <ThemeSelect
                             value={user.role}
                             disabled={busyId === user.id}
-                            onChange={(event) => updateUser(user, { role: event.target.value as UserRole })}
-                            className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-slate-200 focus:border-purple-500/50 focus:outline-none"
-                          >
-                            <option value="USER">普通用户</option>
-                            <option value="MODERATOR">版主</option>
-                          </select>
+                            options={[
+                              { value: 'USER', label: roleMeta.USER.label },
+                              { value: 'MODERATOR', label: roleMeta.MODERATOR.label },
+                            ]}
+                            onChange={(value) => updateUser(user, { role: value as UserRole })}
+                          />
                         </td>
                         <td className="px-5 py-4 text-center">
-                          <select
+                          <ThemeSelect
                             value={user.status}
                             disabled={busyId === user.id}
-                            onChange={(event) => updateUser(user, { status: event.target.value as UserStatus })}
-                            className="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-slate-200 focus:border-purple-500/50 focus:outline-none"
-                          >
-                            <option value="ACTIVE">正常</option>
-                            <option value="PENDING">待激活</option>
-                            <option value="BANNED">封禁</option>
-                          </select>
+                            options={[
+                              { value: 'ACTIVE', label: statusMeta.ACTIVE.label },
+                              { value: 'PENDING', label: statusMeta.PENDING.label },
+                              { value: 'BANNED', label: statusMeta.BANNED.label },
+                            ]}
+                            onChange={(value) => updateUser(user, { status: value as UserStatus })}
+                          />
                         </td>
                         <td className="px-5 py-4">
                           <p className="font-mono text-xs text-slate-400">{formatDate(user.lastLoginAt) || '从未登录'}</p>
@@ -336,6 +337,93 @@ export default function UserManage() {
           </div>
         </section>
       </div>
+    </div>
+  );
+}
+
+function ThemeSelect({
+  value,
+  options,
+  disabled,
+  onChange,
+}: {
+  value: string;
+  options: Array<{ value: string; label: string }>;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const selected = options.find((option) => option.value === value) ?? options[0];
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="relative inline-flex min-w-[112px] justify-center text-left">
+      <button
+        type="button"
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+        className={`inline-flex h-10 w-full items-center justify-between gap-3 rounded-xl border px-4 text-sm font-medium transition ${
+          open
+            ? 'border-purple-400/70 bg-purple-500/10 text-white shadow-lg shadow-purple-950/30'
+            : 'border-white/10 bg-black/25 text-slate-100 hover:border-purple-400/40 hover:bg-white/[0.04]'
+        } disabled:cursor-not-allowed disabled:opacity-50`}
+      >
+        <span className="truncate">{selected?.label}</span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition ${open ? 'rotate-180 text-purple-300' : ''}`} />
+      </button>
+
+      {open ? (
+        <div
+          role="listbox"
+          className="absolute left-0 top-full z-30 mt-2 w-full overflow-hidden rounded-xl border border-purple-400/30 bg-[#080616]/95 p-1 shadow-2xl shadow-black/50 backdrop-blur-xl"
+        >
+          {options.map((option) => {
+            const active = option.value === value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={active}
+                onClick={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                }}
+                className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm transition ${
+                  active ? 'bg-purple-500/25 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                <span>{option.label}</span>
+                {active ? <Check className="h-4 w-4 text-purple-300" /> : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }
