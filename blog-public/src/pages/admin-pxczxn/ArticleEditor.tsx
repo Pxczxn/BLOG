@@ -46,6 +46,8 @@ type ArticleForm = {
 
 const MAX_SELECTED_TAGS = 8;
 const AUTOSAVE_INTERVAL_MS = 1200;
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const ACCEPTED_IMAGE_EXTENSIONS = '.jpg,.jpeg,.png,.webp,.gif';
 
 const emptyForm: ArticleForm = {
   title: '',
@@ -238,8 +240,8 @@ export default function ArticleEditor() {
   };
 
   const uploadImage = async (file: File, target: 'content' | 'cover') => {
-    if (!file.type.startsWith('image/')) {
-      toast.error('只能上传图片文件');
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      toast.error('仅支持 JPG、PNG、WebP、GIF 图片');
       return;
     }
 
@@ -440,20 +442,11 @@ export default function ArticleEditor() {
 
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-slate-400">封面大图</label>
-                <div className="flex gap-2">
-                  <div className="relative min-w-0 flex-1">
-                    <ImageIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                    <input
-                      value={form.coverImage}
-                      onChange={(event) => setField('coverImage', event.target.value)}
-                      placeholder="/uploads/covers/..."
-                      className="w-full rounded-lg border border-white/10 bg-black/20 py-2 pl-9 pr-3 text-sm text-slate-300 focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
-                    />
-                  </div>
+                <div className="flex flex-wrap items-center gap-3">
                   <input
                     ref={coverInputRef}
                     type="file"
-                    accept="image/*"
+                    accept={ACCEPTED_IMAGE_EXTENSIONS}
                     className="hidden"
                     onChange={(event) => {
                       const file = event.target.files?.[0];
@@ -464,11 +457,12 @@ export default function ArticleEditor() {
                     type="button"
                     onClick={() => coverInputRef.current?.click()}
                     disabled={uploading}
-                    className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
                   >
                     <Upload className="h-4 w-4" />
-                    上传
+                    {form.coverImage ? '更换图片' : '上传图片'}
                   </button>
+                  <span className="text-xs text-slate-500">支持 JPG、PNG、WebP、GIF</span>
                 </div>
               </div>
             </div>
@@ -553,7 +547,7 @@ export default function ArticleEditor() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept={ACCEPTED_IMAGE_EXTENSIONS}
                   className="hidden"
                   onChange={(event) => {
                     const file = event.target.files?.[0];
