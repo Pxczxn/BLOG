@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import {
   buildMetaDescription,
   DEFAULT_SITE_SETTINGS,
+  fetchSiteSettings,
   normalizeKeywords,
   readSiteSettings,
   toAbsoluteUrl,
@@ -45,6 +46,7 @@ export default function Seo({
 
   useEffect(() => {
     setSettings(readSiteSettings());
+    fetchSiteSettings().then(setSettings).catch(() => {});
   }, []);
 
   const pagePath = path ?? location.pathname;

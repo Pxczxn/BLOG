@@ -1,7 +1,15 @@
+﻿import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
+import { fetchSiteSettings, readSiteSettings } from '../lib/siteSettings';
 
 export default function Layout() {
+  const [settings, setSettings] = useState(readSiteSettings());
+
+  useEffect(() => {
+    fetchSiteSettings().then(setSettings).catch(() => {});
+  }, []);
+
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#030014] font-sans text-slate-200 selection:bg-purple-500/30">
       <div className="fixed inset-0 pointer-events-none">
@@ -28,7 +36,7 @@ export default function Layout() {
 
       <footer className="relative z-10 mt-12 py-8 text-center">
         <p className="text-[10px] uppercase tracking-[0.2em] text-slate-600">
-          © 2026 破星辰只寻你 · Powered by Starlight Engine
+          &copy; 2026 {settings.siteName} · Powered by Starlight Engine
         </p>
       </footer>
     </div>

@@ -6,8 +6,10 @@ import {
   buildBreadcrumbJsonLd,
   buildMetaDescription,
   DEFAULT_ABOUT_SETTINGS,
+  fetchSiteSettings,
   readAboutSettings,
   readSiteSettings,
+  toAboutSettings,
   toAbsoluteUrl,
 } from '../lib/siteSettings';
 
@@ -34,6 +36,12 @@ export default function About() {
   useEffect(() => {
     setSettings(readAboutSettings());
     setSiteSettings(readSiteSettings());
+    fetchSiteSettings()
+      .then((settings) => {
+        setSiteSettings(settings);
+        setSettings(toAboutSettings(settings));
+      })
+      .catch(() => {});
   }, []);
 
   const pageDescription = buildMetaDescription(`${settings.bio} ${settings.bioSub}`, siteSettings.description);

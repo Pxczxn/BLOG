@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { FileText } from 'lucide-react';
@@ -7,15 +7,17 @@ import Sidebar from '../components/Sidebar';
 import EmptyState from '../components/EmptyState';
 import Seo from '../components/Seo';
 import request, { getStaticUrl } from '../lib/request';
-import { buildBreadcrumbJsonLd, buildMetaDescription, readSiteSettings, toAbsoluteUrl } from '../lib/siteSettings';
+import { buildBreadcrumbJsonLd, buildMetaDescription, fetchSiteSettings, readSiteSettings, toAbsoluteUrl } from '../lib/siteSettings';
 
 export default function Home() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const siteSettings = readSiteSettings();
+  const [siteSettings, setSiteSettings] = useState(readSiteSettings());
 
   useEffect(() => {
+    fetchSiteSettings().then(setSiteSettings).catch(() => {});
+
     const fetchArticles = async () => {
       try {
         setLoading(true);
@@ -99,11 +101,11 @@ export default function Home() {
           className="flex flex-col items-center"
         >
           <h1 className="mb-4 text-4xl font-black tracking-tight text-white drop-shadow-[0_0_15px_rgba(168,85,247,0.4)] md:text-5xl">
-            探索技术边界
+            {siteSettings.homeTitle}
           </h1>
 
           <p className="mb-6 max-w-2xl text-base text-slate-400 md:text-lg">
-            分享前端开发、系统设计与工程化实践，也记录一个开发者不断打磨作品的过程。
+            {siteSettings.homeIntro}
           </p>
 
           <Link

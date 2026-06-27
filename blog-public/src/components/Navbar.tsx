@@ -1,10 +1,11 @@
-import { useState, type ReactNode } from 'react';
+﻿import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, User, BookOpen, Package, MessageSquare, Info, LogOut, Menu, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useAuth } from '../lib/AuthContext';
 import { getStaticUrl } from '../lib/request';
+import { fetchSiteSettings, readSiteSettings } from '../lib/siteSettings';
 import RoleBadge from './RoleBadge';
 
 export default function Navbar() {
@@ -12,6 +13,11 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [settings, setSettings] = useState(readSiteSettings());
+
+  useEffect(() => {
+    fetchSiteSettings().then(setSettings).catch(() => {});
+  }, []);
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
@@ -27,7 +33,7 @@ export default function Navbar() {
             to="/"
             className="shrink-0 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-xl font-bold text-transparent"
           >
-            破星辰只寻你
+            {settings.siteName}
           </Link>
 
           <div className="hidden gap-2 text-sm font-medium text-slate-400 md:flex">
