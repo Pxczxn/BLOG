@@ -8,12 +8,16 @@ import com.pxczxn.blog.community.node.exception.CommunityNodeNotFoundException;
 import com.pxczxn.blog.community.node.repository.CommunityNodeRepository;
 import com.pxczxn.blog.community.post.entity.CommunityPostStatus;
 import com.pxczxn.blog.community.post.repository.CommunityPostRepository;
+import com.pxczxn.blog.community.post.repository.NodePostCountProjection;
 import com.pxczxn.blog.user.exception.UserAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 社区节点服务
@@ -36,11 +40,10 @@ public class CommunityNodeService {
      */
     @Transactional(readOnly = true)
     public List<CommunityNodeResponse> listPublic() {
-        return communityNodeRepository.findAllByStatusOrderBySortOrderAscCreatedAtAsc(CommunityNodeStatus.ACTIVE).stream()
-                .map(node -> CommunityNodeResponse.from(
-                        node,
-                        communityPostRepository.countByNodeIdAndStatus(node.getId(), CommunityPostStatus.PUBLISHED)
-                ))
+        List<CommunityNode> nodes = communityNodeRepository.findAllByStatusOrderBySortOrderAscCreatedAtAsc(CommunityNodeStatus.ACTIVE);
+        Map<Long, Long> postCounts = loadPublishedPostCounts(nodes.stream().map(CommunityNode::getId).toList());
+        return nodes.stream()
+                .map(node -> CommunityNodeResponse.from(node, postCounts.getOrDefault(node.getId(), 0L)))
                 .toList();
     }
 
@@ -70,12 +73,12 @@ public class CommunityNodeService {
      */
     @Transactional(readOnly = true)
     public List<CommunityNodeResponse> listAdmin() {
-        return communityNodeRepository.findAll().stream()
+        List<CommunityNode> nodes = communityNodeRepository.findAll().stream()
                 .sorted(java.util.Comparator.comparing(CommunityNode::getSortOrder).thenComparing(CommunityNode::getCreatedAt))
-                .map(node -> CommunityNodeResponse.from(
-                        node,
-                        communityPostRepository.countByNodeIdAndStatus(node.getId(), CommunityPostStatus.PUBLISHED)
-                ))
+                .toList();
+        Map<Long, Long> postCounts = loadPublishedPostCounts(nodes.stream().map(CommunityNode::getId).toList());
+        return nodes.stream()
+                .map(node -> CommunityNodeResponse.from(node, postCounts.getOrDefault(node.getId(), 0L)))
                 .toList();
     }
 
@@ -201,5 +204,13 @@ public class CommunityNodeService {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private Map<Long, Long> loadPublishedPostCounts(Collection<Long> nodeIds) {
+        if (nodeIds.isEmpty()) {
+            return Map.of();
+        }
+        return communityPostRepository.countByNodeIdsAndStatus(nodeIds, CommunityPostStatus.PUBLISHED).stream()
+                .collect(Collectors.toMap(NodePostCountProjection::getNodeId, NodePostCountProjection::getCount));
     }
 }

@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS article (
     INDEX idx_slug (slug),
     INDEX idx_status (status),
     INDEX idx_status_published_at (status, published_at DESC),
+    INDEX idx_article_status_created_at (status, created_at DESC),
     INDEX idx_author_id (author_id),
     INDEX idx_article_category_id (category_id),
     INDEX idx_article_community_author_id (community_author_id)
@@ -196,7 +197,8 @@ CREATE TABLE IF NOT EXISTS community_node (
     status ENUM('ACTIVE', 'HIDDEN') NOT NULL DEFAULT 'ACTIVE' COMMENT '状态: ACTIVE-显示, HIDDEN-隐藏',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    INDEX idx_community_node_sort (sort_order, created_at)
+    INDEX idx_community_node_sort (sort_order, created_at),
+    INDEX idx_community_node_status_sort_created (status, sort_order, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='社区节点/板块表';
 
 -- ============================================================
@@ -222,8 +224,10 @@ CREATE TABLE IF NOT EXISTS community_post (
     CONSTRAINT fk_community_post_author
         FOREIGN KEY (author_id) REFERENCES community_user(id) ON DELETE CASCADE ON UPDATE CASCADE,
     INDEX idx_community_post_node_status (node_id, status, published_at),
+    INDEX idx_community_post_node_status_published_created (node_id, status, published_at DESC, created_at DESC),
     INDEX idx_community_post_author_created (author_id, created_at),
-    INDEX idx_community_post_status_created (status, created_at)
+    INDEX idx_community_post_status_created (status, created_at),
+    INDEX idx_community_post_status_published_created (status, published_at DESC, created_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='社区帖子表';
 
 -- ============================================================
