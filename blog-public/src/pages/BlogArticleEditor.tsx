@@ -39,6 +39,50 @@ type TagOption = {
 const MAX_SELECTED_TAGS = 8;
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const ACCEPTED_IMAGE_EXTENSIONS = '.jpg,.jpeg,.png,.webp,.gif';
+const IMAGE_COMPRESS_THRESHOLD = 900 * 1024;
+const IMAGE_MAX_WIDTH = 1600;
+const IMAGE_MAX_HEIGHT = 900;
+
+const getUploadFileName = (file: File, forceJpeg: boolean) => {
+  if (!forceJpeg) return file.name;
+  const baseName = file.name.replace(/\.[^.]+$/, '') || 'image';
+  return `${baseName}.jpg`;
+};
+
+const compressImageForUpload = async (file: File) => {
+  if (file.type === 'image/gif' || file.size <= IMAGE_COMPRESS_THRESHOLD) {
+    return file;
+  }
+
+  const bitmap = await createImageBitmap(file);
+  const ratio = Math.min(1, IMAGE_MAX_WIDTH / bitmap.width, IMAGE_MAX_HEIGHT / bitmap.height);
+  const width = Math.max(1, Math.round(bitmap.width * ratio));
+  const height = Math.max(1, Math.round(bitmap.height * ratio));
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext('2d');
+  if (!context) {
+    bitmap.close();
+    return file;
+  }
+
+  context.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, 'image/jpeg', 0.82);
+  });
+
+  if (!blob || blob.size >= file.size) {
+    return file;
+  }
+
+  return new File([blob], getUploadFileName(file, true), {
+    type: 'image/jpeg',
+    lastModified: Date.now(),
+  });
+};
 
 export default function BlogArticleEditor() {
   const { user, initializing } = useAuth();
@@ -159,15 +203,17 @@ export default function BlogArticleEditor() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
       if (target === 'cover') {
         setCoverUploading(true);
       } else {
         setContentImageUploading(true);
       }
+
+      const uploadFile = await compressImageForUpload(file);
+      const formData = new FormData();
+      formData.append('file', uploadFile);
+
       const res: any = await request.post('/api/community/upload/cover', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
